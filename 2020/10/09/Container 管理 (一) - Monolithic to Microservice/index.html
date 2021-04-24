@@ -262,7 +262,9 @@
 <li>擁有水平擴展的能力 (依然需要看情境)</li>
 <li>不同的微服務可以獨立維護部署</li>
 </ol>
-<p><img src="https://i.imgur.com/enSwKWw.png"><br><img src="https://i.imgur.com/fSUyZRB.png"></p>
+<img src="https://i.imgur.com/enSwKWw.png" width="800" height="400" />
+<img src="https://i.imgur.com/fSUyZRB.png" width="800" height="400" />
+
 <h2 id="困難點"><a href="#困難點" class="headerlink" title="困難點"></a>困難點</h2><ul>
 <li><p>😂 重新抽象軟體架構</p>
 </li>
@@ -299,13 +301,12 @@
 </li>
 <li><strong>openshift</strong> <ul>
 <li><strong>now base on kubernetes</strong></li>
-<li>red hat cloud 較不有名</li>
-<li><img src="https://i.imgur.com/JegIerL.png" width="450" height="450" /></li>
+<li>red hat cloud 較不有名<img src="https://i.imgur.com/JegIerL.png" width="450" height="450" /></li>
 </ul>
 </li>
 <li><strong>kubernetes</strong><ul>
 <li>在 public cloud 得到最完整的支援</li>
-<li>儼然成為 Container management 的標準 </li>
+<li>儼然成為 Container Management 的標準 </li>
 </ul>
 </li>
 <li><strong>minikube</strong><ul>
@@ -327,7 +328,9 @@
 <li>原以 C++ 編寫，後以 Golang 重構。</li>
 <li>發音 koo ～ ber ～ natis，又稱作 <strong>k8s</strong>。</li>
 </ol>
-<h3 id="叢集架構"><a href="#叢集架構" class="headerlink" title="叢集架構"></a>叢集架構</h3><p><img src="https://i.imgur.com/g8e8Gft.png"></p>
+<h3 id="叢集架構"><a href="#叢集架構" class="headerlink" title="叢集架構"></a>叢集架構</h3><!-- ![](https://i.imgur.com/g8e8Gft.png) -->
+<img src="https://i.imgur.com/g8e8Gft.png" width="800" height="400" />
+
 <ol>
 <li><strong>Pod</strong> 最基本的部署單位。</li>
 <li><strong>Service</strong> 代表一組功能相同的 Pods 群體。訪問 Service 時會自動 load balance 到該群體底下任意的 Pod 上。</li>
@@ -336,26 +339,23 @@
 </ol>
 <h3 id="系統元件"><a href="#系統元件" class="headerlink" title="系統元件"></a>系統元件</h3><!-- > FIXME: ingress service 在哪兒？ -->
 
-<p><img src="https://i.imgur.com/zpnOfVC.png"></p>
-<ul>
-<li><strong>master node</strong> : 負責管理和控制所有 <strong>worker node</strong> 的主機。</li>
-<li><strong>Worker node</strong> : 運行微服務的主機。</li>
-<li><strong>API server</strong> : 提供 Kubernetes API ，讓使用者可以透過它管理和設定整個系統。</li>
-<li><strong>etcd</strong> : 儲存整個 k8s 叢集中物件的規格。</li>
-<li><strong>Scheduler</strong> : 負責決定 Pod 要部署到哪一個節點上。</li>
-<li><strong>Kubelets</strong> : <strong>視為每個節點的大腦</strong>。<ul>
-<li> 作為 master node 和 worker node 溝通的媒介。</li>
-<li>負責管理 Pod，包括在 Pod 發生故障時創建新的 Pod。</li>
-</ul>
-</li>
-<li><strong>cAdvisor</strong> : 搜集該節點上所有資源的資訊，透過 kubelet 隨時回報給 master node。</li>
-<li><strong>Kube-Proxy</strong> : 維護節點上的網絡規則。負責網路流量的傳送。</li>
-</ul>
+<img src="https://i.imgur.com/zpnOfVC.png" width="800" height="450" />
+<!-- ![](https://i.imgur.com/zpnOfVC.png) -->
+- **master node** : 負責管理和控制所有 **worker node** 的主機。
+- **Worker node** : 運行微服務的主機。
+- **API server** : 提供 Kubernetes API ，讓使用者可以透過它管理和設定整個系統。
+- **etcd** : 儲存整個 k8s 叢集中物件的規格。
+- **Scheduler** : 負責決定 Pod 要部署到哪一個節點上。
+- **Kubelets** : **視為每個節點的大腦**。
+    -  作為 master node 和 worker node 溝通的媒介。
+    - 負責管理 Pod，包括在 Pod 發生故障時創建新的 Pod。
+- **cAdvisor** : 搜集該節點上所有資源的資訊，透過 kubelet 隨時回報給 master node。
+- **Kube-Proxy** : 維護節點上的網絡規則。負責網路流量的傳送。
+
 <h3 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h3><ul>
 <li><p><strong>Velocity 速度</strong></p>
 <ul>
-<li>可達成短時間多次的不停機更新。</li>
-<li><img src="https://i.imgur.com/v6vg4AW.jpg" width="550" height="325" /></br></li>
+<li>可達成短時間多次的不停機更新。<br><img src="https://i.imgur.com/v6vg4AW.jpg" width="550" height="325" /></br></li>
 </ul>
 </li>
 <li><p><strong>Immutability 不變性</strong></p>
@@ -406,7 +406,10 @@
     <a href="/2020/07/09/%E4%BD%BF%E7%94%A8-Flutter-%E5%9C%A8-iOS-%E5%92%8C-Android-%E4%B8%8A%E8%A8%AD%E5%AE%9A-GoogleMap/" rel="prev" title="使用 Flutter 在 iOS 和 Android  上設定 GoogleMap">
       <i class="fa fa-chevron-left"></i> 使用 Flutter 在 iOS 和 Android  上設定 GoogleMap
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/24/Container%20%E7%AE%A1%E7%90%86%20(%E7%AD%86%E8%A8%98%20%E4%BA%8C)%20-%20Kubernetes/" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -482,7 +485,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
