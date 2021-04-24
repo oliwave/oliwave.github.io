@@ -22,12 +22,12 @@
     var CONFIG = {"hostname":"oliwave.github.io","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="前言在玩轉 Kubernetes 這個炫砲的技術之前，我們必須要先瞭解它到底在解決什麼樣的問題以及整個來龍去脈。該文章主要先探討 Monlithic 作為歷史背景下常用的開發模式，一直到使用 Microservice 時遇到的處境以及相對應工具的搭配，來呈現在應用程式微服務化的情境底下如何管理大量的微服務。 Monolithic 的缺點 隨時間而變肥大且複雜，軟體難以重構。在除錯時也難以尋找。 不">
+  <meta name="description" content="前言在玩轉 Kubernetes 這個炫砲的技術之前，我們必須要先瞭解它到底在解決什麼樣的問題以及整個來龍去脈。該文章主要先探討 Monlithic 作為歷史背景下常用的開發模式，一直到使用 Microservice 時遇到的處境以及相對應工具的搭配，來呈現在應用程式微服務化的情境底下如何管理大量的微服務。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Container 管理 (筆記 一) - Monolithic to Microservice">
 <meta property="og:url" content="http://oliwave.github.io/2020/10/09/Container%20%E7%AE%A1%E7%90%86%20(%E4%B8%80)%20-%20Monolithic%20to%20Microservice/index.html">
 <meta property="og:site_name" content="歐里丸Blog">
-<meta property="og:description" content="前言在玩轉 Kubernetes 這個炫砲的技術之前，我們必須要先瞭解它到底在解決什麼樣的問題以及整個來龍去脈。該文章主要先探討 Monlithic 作為歷史背景下常用的開發模式，一直到使用 Microservice 時遇到的處境以及相對應工具的搭配，來呈現在應用程式微服務化的情境底下如何管理大量的微服務。 Monolithic 的缺點 隨時間而變肥大且複雜，軟體難以重構。在除錯時也難以尋找。 不">
+<meta property="og:description" content="前言在玩轉 Kubernetes 這個炫砲的技術之前，我們必須要先瞭解它到底在解決什麼樣的問題以及整個來龍去脈。該文章主要先探討 Monlithic 作為歷史背景下常用的開發模式，一直到使用 Microservice 時遇到的處境以及相對應工具的搭配，來呈現在應用程式微服務化的情境底下如何管理大量的微服務。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://i.imgur.com/enSwKWw.png">
 <meta property="og:image" content="https://i.imgur.com/fSUyZRB.png">
@@ -251,6 +251,8 @@
 
       
         <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在玩轉 Kubernetes 這個炫砲的技術之前，我們必須要先瞭解它到底在解決什麼樣的問題以及整個來龍去脈。該文章主要先探討 Monlithic 作為歷史背景下常用的開發模式，一直到使用 Microservice 時遇到的處境以及相對應工具的搭配，來呈現在應用程式微服務化的情境底下如何管理大量的微服務。</p>
+<span id="more"></span>
+
 <h3 id="Monolithic-的缺點"><a href="#Monolithic-的缺點" class="headerlink" title="Monolithic 的缺點"></a>Monolithic 的缺點</h3><ol>
 <li>隨時間而變肥大且複雜，軟體難以重構。在除錯時也難以尋找。</li>
 <li>不能依據不同服務的流量需求來 <strong>水平擴展</strong> ，而是一次部署整體支應用程式造成不必要的資源成本增加。</li>
