@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"oliwave.github.io","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言上篇提到使用 Kubernetes 情境的前因後果以及它的基礎架構。這次本篇主要在紀錄 Kubernetes 常用的部分元件的介紹和如何使用：  Pod Label ReplicaSet DaemonSet">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Container 管理 (筆記 二) - kubernetes Component (一)">
+<meta property="og:url" content="http://oliwave.github.io/2020/11/09/Container%20%E7%AE%A1%E7%90%86%20(%E7%AD%86%E8%A8%98%20%E4%BA%8C)%20-%20Kubernetes/index.html">
+<meta property="og:site_name" content="歐里丸Blog">
+<meta property="og:description" content="前言上篇提到使用 Kubernetes 情境的前因後果以及它的基礎架構。這次本篇主要在紀錄 Kubernetes 常用的部分元件的介紹和如何使用：  Pod Label ReplicaSet DaemonSet">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/A16s2k9.png">
+<meta property="og:image" content="https://i.imgur.com/uBwYrHV.png">
+<meta property="og:image" content="https://i.imgur.com/i29gYZY.png">
+<meta property="og:image" content="https://i.imgur.com/mSLyrq7.png">
+<meta property="og:image" content="https://i.imgur.com/7cq15KY.png">
+<meta property="og:image" content="https://i.imgur.com/ksxUhIn.png">
+<meta property="article:published_time" content="2020-11-09T11:10:00.000Z">
+<meta property="article:modified_time" content="2021-01-12T02:10:00.000Z">
+<meta property="article:author" content="oliwave 歐理丸">
+<meta property="article:tag" content="Microservice">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/A16s2k9.png">
+
+<link rel="canonical" href="http://oliwave.github.io/2020/11/09/Container%20%E7%AE%A1%E7%90%86%20(%E7%AD%86%E8%A8%98%20%E4%BA%8C)%20-%20Kubernetes/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>Container 管理 (筆記 二) - kubernetes Component (一) | 歐里丸Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">歐里丸Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">Learn by sharing</h1>
+      
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="search-pop-overlay">
+  <div class="popup search-popup">
+      <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+  </div>
+</div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2020/11/09/Container%20%E7%AE%A1%E7%90%86%20(%E7%AD%86%E8%A8%98%20%E4%BA%8C)%20-%20Kubernetes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="oliwave 歐理丸">
+      <meta itemprop="description" content="分享、學習">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="歐里丸Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          Container 管理 (筆記 二) - kubernetes Component (一)
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-11-09 19:10:00" itemprop="dateCreated datePublished" datetime="2020-11-09T19:10:00+08:00">2020-11-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-12 10:10:00" itemprop="dateModified" datetime="2021-01-12T10:10:00+08:00">2021-01-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/" itemprop="url" rel="index"><span itemprop="name">Kubernetes</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上篇提到使用 Kubernetes 情境的前因後果以及它的基礎架構。這次本篇主要在紀錄 Kubernetes 常用的部分元件的介紹和如何使用：</p>
+<ul>
+<li>Pod</li>
+<li>Label</li>
+<li>ReplicaSet</li>
+<li>DaemonSet</li>
+</ul>
+<span id="more"></span>
+
+<h1 id="kubernetes-Component"><a href="#kubernetes-Component" class="headerlink" title="kubernetes Component"></a>kubernetes Component</h1><h2 id="k8s-物件的概念"><a href="#k8s-物件的概念" class="headerlink" title="k8s 物件的概念"></a>k8s 物件的概念</h2><p>k8s 常見的物件像是 <code>Pod</code>、<code>Service</code>、<code>deployment</code>、<code>ingress</code> 等等</p>
+<p><strong>使用 Kubernetes API 時，是以 JSON 或 YAML 檔案來定義物件。</strong></p>
+<!-- - 這些檔案不是由伺服器因應 query 的請求而返回，又或是作為請求 api 的一部分傳到伺服器上。 -->
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># This&#x27;s a yaml file to describe the spec and state of Pod objects.</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">kubia-manual</span></span><br><span class="line">    <span class="attr">labels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">    <span class="attr">containers:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">oliwave/kubia</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">      <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">        <span class="attr">protocol:</span> <span class="string">TCP</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="k8s-物件和-RESTful-API-的關係"><a href="#k8s-物件和-RESTful-API-的關係" class="headerlink" title="k8s 物件和 RESTful API 的關係"></a>k8s 物件和 RESTful API 的關係</h2><ul>
+<li>任何資源在 k8s 當中都可以用 <strong>RESTful 的 <a target="_blank" rel="noopener" href="https://dev.to/flippedcoding/what-is-the-difference-between-a-uri-and-a-url-4455">URI</a> 來表示</strong>。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;your-k8s.com&#x2F;api&#x2F;v1&#x2F;namespaces&#x2F;default&#x2F;pods&#x2F;my-pod</span><br></pre></td></tr></table></figure></li>
+<li>這些資源在 k8s 當中都叫做 Kubernetes objects 。</li>
+<li>每一個 kubernetes objects 都存在 <strong>唯一的 HTTP/HTTPS 路徑</strong>。</li>
+</ul>
+<p>取得 Kubernetes objects 最基本的 kubectl 指令是 <strong>get</strong> </p>
+<blockquote>
+<p>kubectl get &lt;resource-name&gt;</p>
+</blockquote>
+<p>列出在目前 namespaces 底下的所有資源，然而若想要取得特定資源</p>
+<blockquote>
+<p>kubectl get &lt;resource-name&gt; &lt;obj-name&gt;</p>
+</blockquote>
+<p>想要知道該物件的詳細資訊</p>
+<blockquote>
+<p>kubectl describe &lt;resource-name&gt; &lt;obj-name&gt;</p>
+</blockquote>
+<hr>
+<h3 id="o-參數的意義"><a href="#o-參數的意義" class="headerlink" title="-o 參數的意義"></a>-o 參數的意義</h3><p>在預設的情況下， kubectl 的返回結果是 human-readable ，但這會導致許多詳細的資訊被省略掉。如果想要得到完整的 <strong>物件</strong> 可以加上 -o 參數並指定想要的格式</p>
+<blockquote>
+<p>-o json/yaml</p>
+</blockquote>
+<p>更進階的做法還可以從返回的物件中指定想要看到的 field</p>
+<blockquote>
+<p>kubectl get pods my-pod -o jsonpath –template={.status.podIP}</p>
+</blockquote>
+<hr>
+<h3 id="Creating-Updating-物件"><a href="#Creating-Updating-物件" class="headerlink" title="Creating, Updating 物件"></a>Creating, Updating 物件</h3><h4 id="範例"><a href="#範例" class="headerlink" title="範例"></a>範例</h4><p>假設有一個簡單的物件在 <code>obj.yaml</code> 中定義好了。可以透過 kubectl 在 Kubernetes 中 <strong>創建和更新</strong> 該物件</p>
+<blockquote>
+<p>kubectl apply -f obj.yaml</p>
+</blockquote>
+<p><strong>每個物件會有 metadata 這個欄位，用以定義物件唯一的名字</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#...</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">inventory</span></span><br><span class="line"><span class="comment">#...</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Namespaces"><a href="#Namespaces" class="headerlink" title="Namespaces"></a>Namespaces</h1><p>Kubernetes 支持由同一 physical cluster 支持的多個 virtual clusters。這些  virtual clusters 稱為 <strong>Namespaces</strong>。</p>
+<p><img src="https://i.imgur.com/A16s2k9.png"></p>
+<p>namespaces 提供了名稱範圍。資源名稱在名稱空間內必須唯一，但在各個名稱空間之間是不用的。namespaces 彼此是平行的關係，</p>
+<p><strong>物件的名字在一個 namespace 底下是唯一的</strong></p>
+<ul>
+<li><code>namespaces</code> 用來組織在叢集中的 <strong>物件</strong></li>
+<li>可以把每一個 <em><code>namespaces</code></em> 都想像成一個 <strong>資料夾</strong> 管理自己的 <strong>物件</strong></li>
+<li><code>kubectl</code> 預設是和 <code>default namespaces</code> 互動</li>
+<li>如果想列出叢集中所有的 <code>pods</code> ，可以用 <code>--all-namespaces</code> 作為參數</li>
+<li>不同的使用者應該有不同的 <code>namespaces</code> ，也需要有權限的管理</li>
+</ul>
+<h4 id="創建-Namespace"><a href="#創建-Namespace" class="headerlink" title="創建 Namespace"></a>創建 Namespace</h4><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Namespace</span> <span class="comment"># 資源的類型</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">custom-namespace</span> <span class="comment"># Namespace 的名字</span></span><br></pre></td></tr></table></figure>
+
+<p>在不同的 <code>namespace</code> 創建資源</p>
+<blockquote>
+<p>kubectl create -f kubia-manual.yaml -n custom-namespace</p>
+</blockquote>
+<h1 id="Pods"><a href="#Pods" class="headerlink" title="Pods"></a>Pods</h1><h2 id="Pod-基本概念"><a href="#Pod-基本概念" class="headerlink" title="Pod 基本概念"></a>Pod 基本概念</h2><ol>
+<li>K8s 將多個 container 變成一組單位 <code>Pod</code> (Pod 有一群鯨魚的意思)<!-- 2. Pod 代表一個在相同環境底下執行的 application containers 和 volume 的集合 **// rephrase** --></li>
+<li>Pod 是 K8s 中可部署的最小單位，也就是所有在 Pod 裡的 containers 都運行在同一個 worker node 上面。</li>
+<li><strong>每一個在 Pod 裡面的 container 都擁有自己的 cgroup ，但卻共用一定數量的 namespaces</strong></li>
+<li>應用程式在同個 Pod 中共享同個 <code>Network</code> 、 <code>UTS</code> (hostname)、 <code>IPC</code> namespaces ，因此可以用 <code>http://localhost:\&lt;port_num&gt;</code> 來彼此溝通 (IPC)。相反的應用程式在不同的 Pod 是隔離的，所以有不同的 IP 、 hostname 等等。</li>
+</ol>
+<hr>
+<h2 id="Container-的概念"><a href="#Container-的概念" class="headerlink" title="Container 的概念"></a>Container 的概念</h2><p>使用 Linux 的兩個技術</p>
+<ul>
+<li><strong>Namespaces</strong>  確保每一個 process 都是由自己的觀點去看整個系統 (files, processes, network interfaces, hostname, and so on) <strong>軟體</strong></li>
+</ul>
+<ul>
+<li><strong>Cgroups</strong> 限制每一個 process 可以使用的資源 (CPU, memory, network bandwidth, and so on) <strong>硬體</strong></li>
+</ul>
+<p>有許多種 Namespaces 而每一種都是在隔離不同種的資源</p>
+<hr>
+<h2 id="Pod-IP"><a href="#Pod-IP" class="headerlink" title="Pod IP"></a>Pod IP</h2><p>對 K8s 來說，不管 Pod 在哪一個 Node 上都可以把它們想像成在同一個 LAN 底下。因此彼此是可以訪問對方的，這是透過 <strong>CNI</strong> (overlay network) 來實現的。</p>
+<p><img src="https://i.imgur.com/uBwYrHV.png"></p>
+<!-- **在同一個 Pod 底下的 containers 就像一台實體主機或虛擬機上跑一些 processes 一樣** -->
+<h2 id="如何創建一個-Pod"><a href="#如何創建一個-Pod" class="headerlink" title="如何創建一個 Pod"></a>如何創建一個 Pod</h2><p>事實上可以透過 kubectl 用以下幾種 K8s 提供的方式來創造物件</p>
+<ul>
+<li><code>Imperative command</code> 立即指令（<strong>不建議使用</strong>）<ul>
+<li><blockquote>
+<p>kubectl run kuard –generator=run-pod/v1 –image=gcr.io/kuar-demo/kuard-amd64:blue</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><code>Declarative configuation</code> =&gt; <strong>撰寫 Pod manifest</strong><ul>
+<li><blockquote>
+<p>kubectl apply -f pod.yaml</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li>撰寫簡易的 Pod Manifest</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">gcr.io/kuar-demo/kuard-amd64:blue</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line">      <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">          <span class="attr">protocol:</span> <span class="string">TCP</span></span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="什麼是-Pod-Manifest"><a href="#什麼是-Pod-Manifest" class="headerlink" title="什麼是 Pod Manifest"></a>什麼是 Pod Manifest</h3><ul>
+<li>Pod Manifest 就只是一個用 json 或 yaml 格式來描述 <strong>Pod 物件</strong> 的文字檔案</li>
+<li>該文件描述 Pod 的 <strong>ideal state</strong> ，因此<strong>這是一種 declarative configuration 而不是 imperative configuration</strong></li>
+<li>事實上撰寫 Pod Manifest (或其他 K8s 物件) 是比較推薦的<ul>
+<li>當 source code 在維護</li>
+<li>更容易閱讀</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ol start="2">
+<li><p>把撰寫好的 Pod Manifest 透過 kubectl 丟到 K8s API server</p>
+<ul>
+<li><blockquote>
+<p>kubectl apply -f kuard-pod.yaml</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>K8s API server 會做兩件事:</p>
+<ol>
+<li>透過 <strong>Kube Scheduler</strong> 會決定要放在哪個 worker node 上。</li>
+<li><strong>Kubelet</strong> 屆時會負責把相對應寫在 Pod manifest 裡的 container 都運行起來，並且監控。</li>
+</ol>
+</li>
+</ol>
+<p>以上都步驟都完成後，可以查看所有 Pod 的狀況</p>
+<p><code>kubectl get pods</code></p>
+<p><img src="https://i.imgur.com/i29gYZY.png"></p>
+<p>或是檢查單一 Pod 的詳細資訊</p>
+<p><code>kubectl describe pods kuard</code></p>
+<!-- > FIEXME: 調整 header -->
+<h2 id="終止-pod"><a href="#終止-pod" class="headerlink" title="終止 pod"></a>終止 pod</h2><p><code>kubectl delete pods kuard</code></p>
+<p>:::info</p>
+<h3 id="還有許多可以對-Pod-做的設定…"><a href="#還有許多可以對-Pod-做的設定…" class="headerlink" title="還有許多可以對 Pod 做的設定…"></a>還有許多可以對 Pod 做的設定…</h3><h4 id="Grace-Period"><a href="#Grace-Period" class="headerlink" title="Grace Period"></a>Grace Period</h4><p>事實上當我們刪除一個 Pod 時 K8s 會做以下事情</p>
+<ol>
+<li>讓 Pod 拒絕接收新的 request，並消化當前還有的 request</li>
+<li>在預設時間 30 秒過後才把 Pod 刪除掉</li>
+</ol>
+<p>以上的 30 秒就是所謂的 <strong>Grace period</strong> ，這麼做是為了確保服務的<strong>可靠性</strong>。我們不希望有任何請求是因為要刪除 Pod 而無法回應到的</p>
+<h4 id="Health-Check"><a href="#Health-Check" class="headerlink" title="Health Check"></a>Health Check</h4><p>最簡易的 health check 就是 <strong>process health check</strong> 。也就是直接判斷該程序是否還繼續執行著。但這會有一個很大的問題就是萬一程序進入 dead lock ，事實上該程序仍然運行的但是卻無法再提供服務了。</p>
+<p>因此在 K8s 引進了幾種方法來解決</p>
+<h5 id="Liveness-Probe"><a href="#Liveness-Probe" class="headerlink" title="Liveness Probe"></a>Liveness Probe</h5><p>也<strong>就是執行一個任務，如果通過了他就還健在</strong>。常見的就是發 http request 檢查在 Pod 裡的 container 是否健康～<br><br></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">gcr.io/kuar-demo/kuard-amd64:blue</span> </span><br><span class="line">      <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line">      <span class="attr">livenessProbe:</span></span><br><span class="line">        <span class="attr">httpGet:</span></span><br><span class="line">          <span class="attr">path:</span> <span class="string">/healthy</span> <span class="comment"># 測試該容器是否健康的請求</span></span><br><span class="line">          <span class="attr">port:</span> <span class="number">8080</span></span><br><span class="line">        <span class="attr">initialDelaySeconds:</span> <span class="number">5</span> <span class="comment"># 在 Pod 被初始化後的 5 秒才開始測試</span></span><br><span class="line">        <span class="attr">timeoutSeconds:</span> <span class="number">1</span> <span class="comment"># 限時 1 秒回應</span></span><br><span class="line">        <span class="attr">periodSeconds:</span> <span class="number">10</span> <span class="comment"># 每 10 秒一次</span></span><br><span class="line">        <span class="attr">failureThreshold:</span> <span class="number">3</span> <span class="comment"># 超過三次失敗就重起該 container</span></span><br><span class="line">      <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">            <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">            <span class="attr">protocol:</span> <span class="string">TCP</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="Readiness-Probe"><a href="#Readiness-Probe" class="headerlink" title="Readiness Probe"></a>Readiness Probe</h5><p>readiness probe 和 liveness probe 最大的不一樣就是 liveness probe 確認應用程式是否正確執行，而它則是 <strong>檢查該應用程式是不是已經準備好可以開始服務了</strong>。</p>
+<h5 id="其他的-K8s-所提供的-Health-Check"><a href="#其他的-K8s-所提供的-Health-Check" class="headerlink" title="其他的 K8s 所提供的 Health Check"></a>其他的 K8s 所提供的 Health Check</h5><p>除了 HTTP 以外，還有 <strong>tcpSocket health checks</strong> 或是讓容器執行一段 script 來檢查。這麼做是因為不是每一個服務都是 http-base appliction.</p>
+<hr>
+<hr>
+<h5 id="MISC"><a href="#MISC" class="headerlink" title="MISC"></a>MISC</h5><p><strong>以下都是不建議直接使用 kubectl 去操作的</strong> (違反 declarative configuration 精神)</p>
+<p>有更適當的工具或方法去完成這些任務。</p>
+<ol>
+<li>取得 Pod 的 Logs (fluentd and elasticsearch)</li>
+<li>在 container 裡面執行指令</li>
+<li>從 container 裡面複製檔案到外面，反之亦然</li>
+</ol>
+<hr>
+<h4 id="Resource-Management"><a href="#Resource-Management" class="headerlink" title="Resource Management"></a>Resource Management</h4><p>Pod 在資源（cpu, mem, gpu）的請求上在 K8s 有兩種方式</p>
+<ul>
+<li><strong>minimum</strong> 該容器最少需要多少該種類型的資源 (情況允許，可以多給)</li>
+<li><strong>limit</strong> 該容器最多可以擁有該種類型的資源</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">gcr.io/kuar-demo/kuard-amd64:blue</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">requests:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">&quot;500m&quot;</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">&quot;128Mi&quot;</span></span><br><span class="line">          <span class="attr">limits:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">&quot;1000m&quot;</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">&quot;256Mi&quot;</span></span><br><span class="line">      <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">            <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">            <span class="attr">protocol:</span> <span class="string">TCP</span></span><br></pre></td></tr></table></figure>
+
+
+
+<ol>
+<li><strong>記住資源的請求是以 container 為單位，因為不同服務需要的資源種類和數量都不一樣</strong></li>
+<li><strong>一個 Pod 所請求的資源就是其所有 containers 資源請求的總和</strong></li>
+<li><strong>記憶體與 CPU 資源的分配不一樣，因為記憶體一旦分配給一個程序就不能再收回。因此當系統消耗完記憶體的資源時，就會把取得過多的 contaienr 重啟以達重新分配記憶體資源</strong></li>
+</ol>
+<h4 id="在-Pod-中不同類型的-volume"><a href="#在-Pod-中不同類型的-volume" class="headerlink" title="在 Pod 中不同類型的 volume"></a>在 Pod 中不同類型的 volume</h4><ul>
+<li>生命週期與 Pod 相同的 volume (<strong>emptyDir</strong>)<ul>
+<li>For Communication/synchronization <ul>
+<li>容器間可以共用一些資料</li>
+</ul>
+</li>
+<li>For Cache<ul>
+<li>有時容器需要或被重啟，那就可以緩衝一些運算昂貴的資料</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>長期維持的 Persistent volume Persistent<ul>
+<li>不管是 private 或 public 的 provider ， k8s 都有提供 api</li>
+<li>e.g. NFS, iSCSI, Amazon’s Elastic Block Store, Azure’s Files and Disk Storage,  Google’s Persistent Disk <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">&quot;kuard-data&quot;</span></span><br><span class="line">    <span class="attr">nfs:</span></span><br><span class="line">      <span class="attr">server:</span> <span class="string">my.nfs.server.local</span> </span><br><span class="line">      <span class="attr">path:</span> <span class="string">&quot;/exports&quot;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li>Mounting the host filesystem (hostPath)<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">&quot;kuard-data&quot;</span> </span><br><span class="line">      <span class="attr">hostPath:</span></span><br><span class="line">        <span class="attr">path:</span> <span class="string">&quot;/var/lib/kuard&quot;</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">gcr.io/kuar-demo/kuard-amd64:blue</span> </span><br><span class="line">      <span class="attr">name:</span> <span class="string">kuard</span></span><br><span class="line">      <span class="attr">volumeMounts:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">mountPath:</span> <span class="string">&quot;/data&quot;</span> </span><br><span class="line">          <span class="attr">name:</span> <span class="string">&quot;kuard-data&quot;</span></span><br><span class="line">      <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">          <span class="attr">protocol:</span> <span class="string">TCP</span>      </span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<p><em>不像 docker ，沒有簡單的方法～</em></p>
+<h1 id="Labels"><a href="#Labels" class="headerlink" title="Labels"></a>Labels</h1><ul>
+<li>Labels 是 <strong>鍵值對</strong></li>
+<li>Labels 提供了為 <strong>物件分組</strong> 的基礎（該物件可以是 pod, replicaSet …）</li>
+</ul>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p><strong>Labels 提供一群物件可被識別的標記</strong>，這為之後分組、操作、查看等動作帶來方便。</p>
+<p>在 K8s 中物件要尋找或參考到其他物件的時候就需要用到 selector 。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ReplicaSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span> <span class="comment"># ReplicaSet 用 label 來尋找它管理的物件</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">test</span></span><br><span class="line">  <span class="attr">template:</span> <span class="comment"># PodTemplate </span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span> <span class="comment"># 將 pod 貼上 `app: test` 這個 label</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">test</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/kubia</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://i.imgur.com/mSLyrq7.png" width="500" height="500" /></br></p>
+<hr>
+<p><code>Selector</code> 底下分兩種方式來參考到含有該 label 的物件:</p>
+<ol>
+<li><code>matchLabels</code> 和 <code>matchExpressions</code><ul>
+<li><strong>只有 <code>Job</code>、<code>Deployment</code>、<code>ReplicaSet</code> 還有 <code>DaemonSet</code> 有支援</strong><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">selector:</span></span><br><span class="line">  <span class="attr">matchLabels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">nginx</span></span><br><span class="line">    <span class="attr">tier:</span> <span class="string">frontend</span></span><br><span class="line"> <span class="comment"># or</span></span><br><span class="line"> <span class="comment">#matchExpressions:</span></span><br><span class="line"> <span class="comment">#- key: app # 鍵 必須為 &#x27;app&#x27;</span></span><br><span class="line"> <span class="comment">#  operator: In # 值 必須為 &#x27;kubia&#x27;</span></span><br><span class="line"> <span class="comment">#  values:</span></span><br><span class="line"> <span class="comment">#    - kubia</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>什麼都不加，直接放 label<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">selector:</span></span><br><span class="line">  <span class="attr">app:</span> <span class="string">nginx</span></span><br><span class="line">  <span class="attr">tier:</span> <span class="string">frontend</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@zwhitchcox/matchlabels-labels-and-selectors-explained-in-detail-for-beginners-d421bdd05362">(matchLabels, labels, and selectors 差別)</a></p>
+<hr>
+<h1 id="ReplicaSet-amp-DaemonSet"><a href="#ReplicaSet-amp-DaemonSet" class="headerlink" title="ReplicaSet &amp; DaemonSet"></a>ReplicaSet &amp; DaemonSet</h1><!-- ![](https://i.imgur.com/7cq15KY.png) -->
+<img src="https://i.imgur.com/7cq15KY.png" width="800" height="400" />
+
+
+<ul>
+<li><p><strong>RS</strong> 定義一個 Pod 數量讓他們隨機散佈在 K8s cluster 中</p>
+</li>
+<li><p><strong>DS</strong> <strong>特殊需求</strong> ，要讓 cluster 中的每個 worker node 都有一個該服務的 Pod 。</p>
+<ul>
+<li>例如，像是 log collector 或是 memory monitor 的程式需要在每個節點上。</li>
+<li>在 K8s 系統中 kube-proxy Pod 也是運行在每一個節點上。</li>
+</ul>
+</li>
+</ul>
+<h2 id="ReplicaSet"><a href="#ReplicaSet" class="headerlink" title="ReplicaSet"></a>ReplicaSet</h2><ol>
+<li>通常不會直接使用 ReplicaSet 而是用更高層次的 Deployment<!-- 2. 基本上兩者功能都相同，但是在 label selector 上 ReplicaSet **可以同時比較兩個 labels 以上，還有直接判斷是否有該 key 而不管它的 value (e.g. env=\*)** --></li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ReplicaSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="comment">#matchExpressions:</span></span><br><span class="line">    <span class="comment">#- key: app # 鍵 必須為 &#x27;app&#x27;</span></span><br><span class="line">    <span class="comment">#  operator: In # 值 必須為 &#x27;kubia&#x27;</span></span><br><span class="line">    <span class="comment">#  values:</span></span><br><span class="line">    <span class="comment">#    - kubia</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/kubia</span></span><br></pre></td></tr></table></figure>
+
+<p>詳情可見 <a target="_blank" rel="noopener" href="https://hackmd.io/exfgC8MzSfqKsJgkWIpkJA?both#Labels-Selectors">label selector</a></p>
+<h2 id="DaemonSet"><a href="#DaemonSet" class="headerlink" title="DaemonSet"></a>DaemonSet</h2><p><strong>DS 只會在每一個 Node 上執行一個 Pod</strong></p>
+<p>因此 DaemonSet 不需要透過 K8s scheduler 來安排 Pod 在哪個節點上</p>
+<h3 id="將-Pod-部署到特定的節點上"><a href="#將-Pod-部署到特定的節點上" class="headerlink" title="將 Pod 部署到特定的節點上"></a>將 Pod 部署到特定的節點上</h3><img src="https://i.imgur.com/ksxUhIn.png" width="800" height="400" />
+<!-- ![](https://i.imgur.com/ksxUhIn.png) -->
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">DaemonSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">ssd-monitor</span> </span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">ssd-monitor</span> <span class="comment"># 管理 label 為 `app:ssd-monitor` 的 Pod</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">ssd-monitor</span> </span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">nodeSelector:</span> <span class="comment"># PodSpec 定義的 field</span></span><br><span class="line">        <span class="attr">disk:</span> <span class="string">ssd</span> <span class="comment"># 把 Pod 部署到有 ssd 的節點上</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">main</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/ssd-monitor</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<ul>
+<li><em>如果 nodeSelector 沒有成功找到符合的節點，就不會創建 Pod</em></li>
+<li><em>刪除 RS DS 都會連帶刪除旗下的 Pods</em></li>
+</ul>
+<p>daemonset 也可以用 label selector 部署 pod 到特定的 node 上</p>
+<hr>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Microservice/" rel="tag"># Microservice</a>
+              <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/09/Container%20%E7%AE%A1%E7%90%86%20(%E4%B8%80)%20-%20Monolithic%20to%20Microservice/" rel="prev" title="Container 管理 (筆記 一) - Monolithic to Microservice">
+      <i class="fa fa-chevron-left"></i> Container 管理 (筆記 一) - Monolithic to Microservice
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/09/title:%20Container%20%E7%AE%A1%E7%90%86%20(%E7%AD%86%E8%A8%98%20%E4%B8%89)%20-%20kubernetes%20/" rel="next" title="Container 管理 (筆記 三) - kubernetes Component (二)">
+      Container 管理 (筆記 三) - kubernetes Component (二) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kubernetes-Component"><span class="nav-number"></span> <span class="nav-text">kubernetes Component</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#k8s-%E7%89%A9%E4%BB%B6%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">k8s 物件的概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#k8s-%E7%89%A9%E4%BB%B6%E5%92%8C-RESTful-API-%E7%9A%84%E9%97%9C%E4%BF%82"><span class="nav-number">2.</span> <span class="nav-text">k8s 物件和 RESTful API 的關係</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#o-%E5%8F%83%E6%95%B8%E7%9A%84%E6%84%8F%E7%BE%A9"><span class="nav-number">2.1.</span> <span class="nav-text">-o 參數的意義</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-Updating-%E7%89%A9%E4%BB%B6"><span class="nav-number">2.2.</span> <span class="nav-text">Creating, Updating 物件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AF%84%E4%BE%8B"><span class="nav-number">2.2.1.</span> <span class="nav-text">範例</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Namespaces"><span class="nav-number"></span> <span class="nav-text">Namespaces</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%89%B5%E5%BB%BA-Namespace"><span class="nav-number">0.0.1.</span> <span class="nav-text">創建 Namespace</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Pods"><span class="nav-number"></span> <span class="nav-text">Pods</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Pod-%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">Pod 基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Container-%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">Container 的概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pod-IP"><span class="nav-number">3.</span> <span class="nav-text">Pod IP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%89%B5%E5%BB%BA%E4%B8%80%E5%80%8B-Pod"><span class="nav-number">4.</span> <span class="nav-text">如何創建一個 Pod</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E9%BA%BC%E6%98%AF-Pod-Manifest"><span class="nav-number">4.1.</span> <span class="nav-text">什麼是 Pod Manifest</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B5%82%E6%AD%A2-pod"><span class="nav-number">5.</span> <span class="nav-text">終止 pod</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%82%84%E6%9C%89%E8%A8%B1%E5%A4%9A%E5%8F%AF%E4%BB%A5%E5%B0%8D-Pod-%E5%81%9A%E7%9A%84%E8%A8%AD%E5%AE%9A%E2%80%A6"><span class="nav-number">5.1.</span> <span class="nav-text">還有許多可以對 Pod 做的設定…</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Grace-Period"><span class="nav-number">5.1.1.</span> <span class="nav-text">Grace Period</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Health-Check"><span class="nav-number">5.1.2.</span> <span class="nav-text">Health Check</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Liveness-Probe"><span class="nav-number">5.1.2.1.</span> <span class="nav-text">Liveness Probe</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Readiness-Probe"><span class="nav-number">5.1.2.2.</span> <span class="nav-text">Readiness Probe</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E7%9A%84-K8s-%E6%89%80%E6%8F%90%E4%BE%9B%E7%9A%84-Health-Check"><span class="nav-number">5.1.2.3.</span> <span class="nav-text">其他的 K8s 所提供的 Health Check</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#MISC"><span class="nav-number">5.1.2.4.</span> <span class="nav-text">MISC</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Resource-Management"><span class="nav-number">5.1.3.</span> <span class="nav-text">Resource Management</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9C%A8-Pod-%E4%B8%AD%E4%B8%8D%E5%90%8C%E9%A1%9E%E5%9E%8B%E7%9A%84-volume"><span class="nav-number">5.1.4.</span> <span class="nav-text">在 Pod 中不同類型的 volume</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Labels"><span class="nav-number"></span> <span class="nav-text">Labels</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ReplicaSet-amp-DaemonSet"><span class="nav-number"></span> <span class="nav-text">ReplicaSet &amp; DaemonSet</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ReplicaSet"><span class="nav-number">1.</span> <span class="nav-text">ReplicaSet</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DaemonSet"><span class="nav-number">2.</span> <span class="nav-text">DaemonSet</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%87-Pod-%E9%83%A8%E7%BD%B2%E5%88%B0%E7%89%B9%E5%AE%9A%E7%9A%84%E7%AF%80%E9%BB%9E%E4%B8%8A"><span class="nav-number">2.1.</span> <span class="nav-text">將 Pod 部署到特定的節點上</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="oliwave 歐理丸"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">oliwave 歐理丸</p>
+  <div class="site-description" itemprop="description">分享、學習</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/oliwave" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/@Oliwave1" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;@Oliwave1" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/oliwave" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-telegram"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.facebook.com/oliwaver" title="FB Page → https:&#x2F;&#x2F;www.facebook.com&#x2F;oliwaver" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oliwave 歐里丸</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
