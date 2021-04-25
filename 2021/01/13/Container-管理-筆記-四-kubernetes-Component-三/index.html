@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"oliwave.github.io","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言上篇提到使用 Kubernetes 的一些基本的網路元件。這次本篇主要在紀錄 Kubernetes 常用的水平擴展元件 Deployment 的觀念以及使用方法。最後會提到 Kubernetes 缺乏的要素以及如何透過 Service Mesh 的引入，在具體上給 Kubernetes 增添什麼樣的變化。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Container 管理 (筆記 四) - kubernetes Component (三)">
+<meta property="og:url" content="http://oliwave.github.io/2021/01/13/Container-%E7%AE%A1%E7%90%86-%E7%AD%86%E8%A8%98-%E5%9B%9B-kubernetes-Component-%E4%B8%89/index.html">
+<meta property="og:site_name" content="歐里丸Blog">
+<meta property="og:description" content="前言上篇提到使用 Kubernetes 的一些基本的網路元件。這次本篇主要在紀錄 Kubernetes 常用的水平擴展元件 Deployment 的觀念以及使用方法。最後會提到 Kubernetes 缺乏的要素以及如何透過 Service Mesh 的引入，在具體上給 Kubernetes 增添什麼樣的變化。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/6d5EZOJ.png">
+<meta property="og:image" content="https://i.imgur.com/WdMKWc3.png">
+<meta property="og:image" content="https://i.imgur.com/jBZ3zlS.png">
+<meta property="og:image" content="https://i.imgur.com/GXjBSMV.png">
+<meta property="og:image" content="https://i.imgur.com/BHXiC2F.png">
+<meta property="og:image" content="https://i.imgur.com/8ySmkba.png">
+<meta property="og:image" content="https://i.imgur.com/s9HFOHg.png">
+<meta property="og:image" content="https://banzaicloud.com/img/blog/istio/sidecar-lifecycle-1.gif">
+<meta property="og:image" content="https://i.imgur.com/7iwg60B.png">
+<meta property="og:image" content="https://i.imgur.com/0cNCHJi.png">
+<meta property="og:image" content="https://i.imgur.com/5LmX7Ux.png">
+<meta property="og:image" content="https://i.imgur.com/epUV9qO.png">
+<meta property="og:image" content="https://i.imgur.com/GXjBSMV.png">
+<meta property="og:image" content="https://i.imgur.com/FCI30dN.png">
+<meta property="article:published_time" content="2021-01-13T02:20:00.000Z">
+<meta property="article:modified_time" content="2021-02-01T02:10:00.000Z">
+<meta property="article:author" content="oliwave 歐理丸">
+<meta property="article:tag" content="Microservice">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/6d5EZOJ.png">
+
+<link rel="canonical" href="http://oliwave.github.io/2021/01/13/Container-%E7%AE%A1%E7%90%86-%E7%AD%86%E8%A8%98-%E5%9B%9B-kubernetes-Component-%E4%B8%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>Container 管理 (筆記 四) - kubernetes Component (三) | 歐里丸Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">歐里丸Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">Learn by sharing</h1>
+      
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="search-pop-overlay">
+  <div class="popup search-popup">
+      <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+  </div>
+</div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2021/01/13/Container-%E7%AE%A1%E7%90%86-%E7%AD%86%E8%A8%98-%E5%9B%9B-kubernetes-Component-%E4%B8%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="oliwave 歐理丸">
+      <meta itemprop="description" content="分享、學習">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="歐里丸Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          Container 管理 (筆記 四) - kubernetes Component (三)
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-13 10:20:00" itemprop="dateCreated datePublished" datetime="2021-01-13T10:20:00+08:00">2021-01-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-02-01 10:10:00" itemprop="dateModified" datetime="2021-02-01T10:10:00+08:00">2021-02-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/" itemprop="url" rel="index"><span itemprop="name">Kubernetes</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>上篇提到使用 Kubernetes 的一些基本的網路元件。這次本篇主要在紀錄 Kubernetes 常用的水平擴展元件 Deployment 的觀念以及使用方法。最後會提到 Kubernetes 缺乏的要素以及如何透過 Service Mesh 的引入，在具體上給 Kubernetes 增添什麼樣的變化。</p>
+<span id="more"></span>
+
+<h1 id="Depolyment"><a href="#Depolyment" class="headerlink" title="Depolyment"></a>Depolyment</h1><p><strong>讓服務可以 zero downtime 升級的組建</strong> （不停機）</p>
+<p><img src="https://i.imgur.com/6d5EZOJ.png"></p>
+<ol>
+<li>自動產生和維護 <code>ReplicaSet</code><ul>
+<li><img src="https://i.imgur.com/WdMKWc3.png"></li>
+</ul>
+</li>
+<li>可隨時 rollback 到先前的版本 (預設是保留兩個版本)<ul>
+<li><img src="https://i.imgur.com/jBZ3zlS.png"></li>
+</ul>
+</li>
+<li>Version-based Rollout (<a target="_blank" rel="noopener" href="https://dev.to/mostlyjason/intro-to-deployment-strategies-blue-green-canary-and-more-3a3">Canary deployment</a>)<ul>
+<li><img src="https://i.imgur.com/GXjBSMV.png" width="350" height="450" /></li>
+</ul>
+</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia-dp</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">oliwave/kubia</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure>
+<h1 id="LAB-在-k8s-上實踐不同版本服務的-rollout"><a href="#LAB-在-k8s-上實踐不同版本服務的-rollout" class="headerlink" title="LAB : 在 k8s 上實踐不同版本服務的 rollout"></a>LAB : 在 k8s 上實踐不同版本服務的 rollout</h1><p><a target="_blank" rel="noopener" href="https://labs.play-with-k8s.com/">Play with k8s</a></p>
+<ol>
+<li>複製以下檔案<ul>
+<li><code>kubia-dp-v1.yaml</code><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia-dp</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">oliwave/kubia:v1</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure></li>
+<li><code>kubia-dp-v2.yaml</code><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia-dp</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">oliwave/kubia:v2</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure></li>
+<li><code>kubia-svc.yaml</code><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="comment">#sessionAffinity: ClientIP # 根據需要來設定</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span> <span class="comment"># service 的 port</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">8080</span> <span class="comment"># service 會將封包轉送的 port</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br></pre></td></tr></table></figure></li>
+<li><code>ingress.yaml</code><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">extensions/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Ingress</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">kubia.example.com</span></span><br><span class="line">    <span class="attr">http:</span></span><br><span class="line">      <span class="attr">paths:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">        <span class="attr">backend:</span></span><br><span class="line">          <span class="attr">serviceName:</span> <span class="string">kubia</span></span><br><span class="line">          <span class="attr">servicePort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><code>kubectl apply -f kubia-dp-v1.yaml</code><ul>
+<li><code>kubectl get po -o wide</code> 檢查 pod 是否部署在叢集中</li>
+<li><code>kubectl get rs</code> 檢查 replicasets 是否有被 deployment 自動的產生</li>
+</ul>
+</li>
+<li><code>kubectl apply -f kubia-svc.yaml</code><ul>
+<li><code>kubectl get svc</code> 取得 Service 的 IP</li>
+</ul>
+</li>
+<li><code>kubectl apply -f ingress.yaml</code></li>
+<li><code>while true; do curl &lt;service IP&gt;; done</code><ul>
+<li>不停得向服務發送請求</li>
+</ul>
+</li>
+<li><code>kubectl apply -f kubia-dp-v2.yaml</code></li>
+</ol>
+<h1 id="Service-Mesh"><a href="#Service-Mesh" class="headerlink" title="Service Mesh"></a>Service Mesh</h1><h2 id="傳統-Microservice-不同服務間的交互"><a href="#傳統-Microservice-不同服務間的交互" class="headerlink" title="傳統 Microservice 不同服務間的交互"></a>傳統 Microservice 不同服務間的交互</h2><!-- <img src="https://i.imgur.com/BHXiC2F.png" width="600" height="300" /></br> -->
+
+<p>每個微服務必須個別實現 <code>Security (公有雲)</code>、<code>Tracing</code>、<code>Logging</code> 等機制。</p>
+<p><img src="https://i.imgur.com/8ySmkba.png"></p>
+<ol>
+<li>導致 <strong>不易開發和維護</strong></li>
+<li>違反微服務 <strong>Do One Thing, Do it Best</strong> 的原則</li>
+</ol>
+<h2 id="What-is-Service-mesh"><a href="#What-is-Service-mesh" class="headerlink" title="What is Service mesh ?"></a>What is Service mesh ?</h2><ol>
+<li>在不影響既有 Application container 的情況下，植入 Sidecar Container </li>
+<li>Sidecar Container 負責管理和設定不同服務實體之間的網路通訊</li>
+</ol>
+<p><img src="https://i.imgur.com/s9HFOHg.png"></p>
+<p>輕鬆簡單地為現有已經部署的微服務進行 <code>load-balancing</code>, <code>service-to-service authentication</code>, <code>monitoring</code> 等等，而 <strong>無需改動現有的服務</strong></p>
+<h1 id="Istio"><a href="#Istio" class="headerlink" title="Istio"></a>Istio</h1><!-- > FIXME: 簡述 Istio 和 Service mesh 的關係 -->
+<p>Istio 在架構上大量的使用 Service Mesh 模式</p>
+<h2 id="實現-Sidecar-Injection-的方式"><a href="#實現-Sidecar-Injection-的方式" class="headerlink" title="實現 Sidecar Injection 的方式"></a>實現 Sidecar Injection 的方式</h2><img src="https://banzaicloud.com/img/blog/istio/sidecar-lifecycle-1.gif" width="450" height="500" />
+
+<ul>
+<li><code>istio-init</code> (<a target="_blank" rel="noopener" href="https://kubernetes.io/docs/concepts/workloads/pods/init-containers/">init container</a>) 負責修改 iptables 的規則，讓所有進來或出去 Pod 的流量都經過 sidecar proxy</li>
+<li><code>istio-proxy</code> 就是 sidecar proxy (based on <a target="_blank" rel="noopener" href="https://www.envoyproxy.io/">Envoy</a>)</li>
+</ul>
+<h2 id="架構"><a href="#架構" class="headerlink" title="架構"></a>架構</h2><!-- > FIXME: pod 要連到其他的 service 時需要經由自己的 service 嗎？ -->
+<p><img src="https://i.imgur.com/7iwg60B.png" width="500" height="500" /></br></p>
+<p>Istio service mesh 在邏輯上可以分為 <code>Control plane</code> 和 <code>Data plane</code></p>
+<ul>
+<li><code>Data plane</code> 是由一組 proxies (<strong>envoy</strong>) 所組成，並以 <strong>Sidecar</strong> 的方式來部署</li>
+<li><code>Control plane</code> 專門用來管理和設定這些 <em>路由流量</em> 的 proxies </li>
+</ul>
+<h4 id="Pilot"><a href="#Pilot" class="headerlink" title="Pilot"></a>Pilot</h4><p><strong>為 Envoy Sidecar 提供 Service Discovery 的服務</strong></p>
+<!-- ![](https://i.imgur.com/0cNCHJi.png) -->
+<img src="https://i.imgur.com/0cNCHJi.png" width="500" height="500" />
+
+<h4 id="Citadel"><a href="#Citadel" class="headerlink" title="Citadel"></a>Citadel</h4><!-- > FIXME: 怎麼認證？ -->
+
+<p>Enables strong service-to-service and end-user authentication with built-in identity and credential management.</p>
+<hr>
+<h4 id="Sidecar-deployment-的效果"><a href="#Sidecar-deployment-的效果" class="headerlink" title="Sidecar deployment 的效果"></a>Sidecar deployment 的效果</h4><ol>
+<li>使 Istio 可以將大量有關流量的訊號抽取出來成為不同的 <em>屬性</em>。Istio 可以通過這些屬性來執行不同的 <em>政策決定 (policy decisions)</em> ，並將他們送到監控系統來提供當前 service mesh 的行為資訊。</li>
+<li>可以將不同的功能加入到現有 Istio 而無需重構架構或是程式碼。</li>
+</ol>
+<hr>
+<hr>
+<h4 id="Traffic"><a href="#Traffic" class="headerlink" title="Traffic"></a>Traffic</h4><p>流量在 Istio 的定義中可以分為 <code>Data plane traffic</code> 和 <code>Control plane traffic</code> 。 Envoy proxies 是 Istio 架構中唯一與 Data plane traffic 有關的組件。</p>
+<hr>
+<h2 id="流量管理"><a href="#流量管理" class="headerlink" title="流量管理"></a>流量管理</h2><p>Istio 的流量管理模組是使用 <strong>envoy proxies</strong> ，隨著你的服務一起部署上去。<strong>所有的流量不論是由 service mesh 接收或送出都會由 envoy 來 proxy</strong>。</p>
+<p><img src="https://i.imgur.com/5LmX7Ux.png"></p>
+<hr>
+<p><code>Envoy</code> 是一種 L7 proxy 和 communication bus (<strong>API gateway</strong>) 被設計用來在大型 <strong><code>SOA</code> Service-oriented Architectures</strong> 上。</p>
+<hr>
+<p>透過簡單規則配置和流量路由控制服務之間的流量和API調用的流量。簡化了 Service 一些屬性上的配置。</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://ithelp.ithome.com.tw/articles/10194912">Circiut breaker</a><ul>
+<li>服務自我檢查的機制 </li>
+<li>避免單一服務崩潰，造成整體服務連鎖崩壞</li>
+</ul>
+</li>
+<li>A/B Testing<br> <img src="https://i.imgur.com/epUV9qO.png"></li>
+<li>Canary rollouts</li>
+<li>Failure recovery</li>
+</ol>
+<h3 id="Kubernetes-就有做了為什麼還需要-Istio"><a href="#Kubernetes-就有做了為什麼還需要-Istio" class="headerlink" title="Kubernetes 就有做了為什麼還需要 Istio ?"></a>Kubernetes 就有做了為什麼還需要 Istio ?</h3><h4 id="舉例：-Version-based-Rollout-Canary-deployment"><a href="#舉例：-Version-based-Rollout-Canary-deployment" class="headerlink" title="舉例： Version-based Rollout (Canary deployment)"></a>舉例： Version-based Rollout (Canary deployment)</h4><ul>
+<li>k8s 使用 <strong>pod 的數量</strong> 來調整不同版本的比例  <img src="https://i.imgur.com/GXjBSMV.png" width="350" height="450" />
+  </li>
+<li>Istio 透過 <code>Virtual service</code> 直接控制流量進入不同流量的比例  <img src="https://i.imgur.com/FCI30dN.png" width="350" height="450" /></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Microservice/" rel="tag"># Microservice</a>
+              <a href="/tags/Kubernetes/" rel="tag"># Kubernetes</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/09/Container%20%E7%AE%A1%E7%90%86%20(%E7%AD%86%E8%A8%98%20%E4%B8%89)%20-%20kubernetes%20/" rel="prev" title="Container 管理 (筆記 三) - kubernetes Component (二)">
+      <i class="fa fa-chevron-left"></i> Container 管理 (筆記 三) - kubernetes Component (二)
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Depolyment"><span class="nav-number">2.</span> <span class="nav-text">Depolyment</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LAB-%E5%9C%A8-k8s-%E4%B8%8A%E5%AF%A6%E8%B8%90%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC%E6%9C%8D%E5%8B%99%E7%9A%84-rollout"><span class="nav-number">3.</span> <span class="nav-text">LAB : 在 k8s 上實踐不同版本服務的 rollout</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Service-Mesh"><span class="nav-number">4.</span> <span class="nav-text">Service Mesh</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%82%B3%E7%B5%B1-Microservice-%E4%B8%8D%E5%90%8C%E6%9C%8D%E5%8B%99%E9%96%93%E7%9A%84%E4%BA%A4%E4%BA%92"><span class="nav-number">4.1.</span> <span class="nav-text">傳統 Microservice 不同服務間的交互</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What-is-Service-mesh"><span class="nav-number">4.2.</span> <span class="nav-text">What is Service mesh ?</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Istio"><span class="nav-number">5.</span> <span class="nav-text">Istio</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%A6%E7%8F%BE-Sidecar-Injection-%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">5.1.</span> <span class="nav-text">實現 Sidecar Injection 的方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%B6%E6%A7%8B"><span class="nav-number">5.2.</span> <span class="nav-text">架構</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Pilot"><span class="nav-number">5.2.0.1.</span> <span class="nav-text">Pilot</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Citadel"><span class="nav-number">5.2.0.2.</span> <span class="nav-text">Citadel</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sidecar-deployment-%E7%9A%84%E6%95%88%E6%9E%9C"><span class="nav-number">5.2.0.3.</span> <span class="nav-text">Sidecar deployment 的效果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Traffic"><span class="nav-number">5.2.0.4.</span> <span class="nav-text">Traffic</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E9%87%8F%E7%AE%A1%E7%90%86"><span class="nav-number">5.3.</span> <span class="nav-text">流量管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Kubernetes-%E5%B0%B1%E6%9C%89%E5%81%9A%E4%BA%86%E7%82%BA%E4%BB%80%E9%BA%BC%E9%82%84%E9%9C%80%E8%A6%81-Istio"><span class="nav-number">5.3.1.</span> <span class="nav-text">Kubernetes 就有做了為什麼還需要 Istio ?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%88%89%E4%BE%8B%EF%BC%9A-Version-based-Rollout-Canary-deployment"><span class="nav-number">5.3.1.1.</span> <span class="nav-text">舉例： Version-based Rollout (Canary deployment)</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="oliwave 歐理丸"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">oliwave 歐理丸</p>
+  <div class="site-description" itemprop="description">分享、學習</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/oliwave" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/@Oliwave1" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;@Oliwave1" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/oliwave" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-telegram"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.facebook.com/oliwaver" title="FB Page → https:&#x2F;&#x2F;www.facebook.com&#x2F;oliwaver" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oliwave 歐里丸</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
