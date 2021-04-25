@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"oliwave.github.io","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言本篇記錄了 Flutter 眾多概念中較為複雜的一個領域，那就是 狀態管理 State Management 的部分。然而之所以複雜的原因就是它並沒有一套實作的標準。例如 Google 自行發表的 BLoC Pattern 、 Rx 系列以及 Flutter 原生的狀態管理，都會在這篇一一做出差異比較與使用時機。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flutter 筆記(二) - 狀態管理">
+<meta property="og:url" content="http://oliwave.github.io/2020/06/16/Flutter%20%E7%AD%86%E8%A8%98(%E4%BA%8C)%20-%20%E7%8B%80%E6%85%8B%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="歐里丸Blog">
+<meta property="og:description" content="前言本篇記錄了 Flutter 眾多概念中較為複雜的一個領域，那就是 狀態管理 State Management 的部分。然而之所以複雜的原因就是它並沒有一套實作的標準。例如 Google 自行發表的 BLoC Pattern 、 Rx 系列以及 Flutter 原生的狀態管理，都會在這篇一一做出差異比較與使用時機。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/B9IuUh1.png">
+<meta property="og:image" content="https://i.imgur.com/PAwcvsJ.png">
+<meta property="og:image" content="https://i.imgur.com/JX8YUp6.png">
+<meta property="og:image" content="https://i.imgur.com/FYyQ0LW.png">
+<meta property="og:image" content="https://i.imgur.com/kzM0rfr.png">
+<meta property="og:image" content="https://i.imgur.com/4797yCz.png">
+<meta property="og:image" content="https://i.imgur.com/WpeEWlc.png">
+<meta property="og:image" content="https://i.imgur.com/u6YOVgL.png">
+<meta property="og:image" content="https://i.imgur.com/wXiUEgw.png">
+<meta property="og:image" content="https://i.imgur.com/QZ5VaZh.png">
+<meta property="og:image" content="https://i.imgur.com/XCpAL6M.png">
+<meta property="og:image" content="https://i.imgur.com/31j8ZDR.png">
+<meta property="og:image" content="https://i.imgur.com/9P2sqZK.png">
+<meta property="og:image" content="https://i.imgur.com/VdpNStC.png">
+<meta property="og:image" content="https://i.imgur.com/YCksDI8.png">
+<meta property="og:image" content="https://i.imgur.com/viyq6La.png">
+<meta property="og:image" content="https://i.imgur.com/yqHS6zH.png">
+<meta property="og:image" content="https://i.imgur.com/Y9myG10.png">
+<meta property="og:image" content="https://i.imgur.com/C5wQrPm.png">
+<meta property="og:image" content="https://i.imgur.com/7P6HCqf.png">
+<meta property="og:image" content="https://i.imgur.com/jnmv79E.png">
+<meta property="og:image" content="https://i.imgur.com/sNw65QO.png">
+<meta property="og:image" content="https://i.imgur.com/ZyF6DjD.png">
+<meta property="og:image" content="https://i.imgur.com/hAHWXuQ.png">
+<meta property="og:image" content="https://i.imgur.com/h0kIBe9.png">
+<meta property="og:image" content="https://i.imgur.com/3lJAeVY.png">
+<meta property="article:published_time" content="2020-06-16T00:10:00.000Z">
+<meta property="article:modified_time" content="2020-06-18T01:10:00.000Z">
+<meta property="article:author" content="oliwave 歐理丸">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="iOS">
+<meta property="article:tag" content="Flutter">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/B9IuUh1.png">
+
+<link rel="canonical" href="http://oliwave.github.io/2020/06/16/Flutter%20%E7%AD%86%E8%A8%98(%E4%BA%8C)%20-%20%E7%8B%80%E6%85%8B%E7%AE%A1%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>Flutter 筆記(二) - 狀態管理 | 歐里丸Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">歐里丸Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">Learn by sharing</h1>
+      
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="search-pop-overlay">
+  <div class="popup search-popup">
+      <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+  </div>
+</div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2020/06/16/Flutter%20%E7%AD%86%E8%A8%98(%E4%BA%8C)%20-%20%E7%8B%80%E6%85%8B%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="oliwave 歐理丸">
+      <meta itemprop="description" content="分享、學習">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="歐里丸Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          Flutter 筆記(二) - 狀態管理
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-06-16 08:10:00" itemprop="dateCreated datePublished" datetime="2020-06-16T08:10:00+08:00">2020-06-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-06-18 09:10:00" itemprop="dateModified" datetime="2020-06-18T09:10:00+08:00">2020-06-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Flutter/" itemprop="url" rel="index"><span itemprop="name">Flutter</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本篇記錄了 Flutter 眾多概念中較為複雜的一個領域，那就是 <strong>狀態管理 State Management</strong> 的部分。然而之所以複雜的原因就是它並沒有一套實作的標準。例如 Google 自行發表的 <strong>BLoC Pattern</strong> 、 <strong>Rx</strong> 系列以及 Flutter 原生的狀態管理，都會在這篇一一做出差異比較與使用時機。</p>
+<span id="more"></span>
+
+<h1 id="Flutter-完整開發架構"><a href="#Flutter-完整開發架構" class="headerlink" title="Flutter 完整開發架構"></a>Flutter 完整開發架構</h1><h2 id="Stream-初識"><a href="#Stream-初識" class="headerlink" title="Stream 初識"></a>Stream 初識</h2><ul>
+<li><p><strong>比喻</strong><br>  <img src="https://i.imgur.com/B9IuUh1.png"></p>
+</li>
+<li><p>巧克力工廠的特色</p>
+<ol>
+<li>工廠收到一個 ‘order’, 做一些處理後, 將蛋糕從工廠的另外一端吐出</li>
+<li>當有第一個訂單以前工廠是尚未建立的</li>
+<li>工廠花大多數的時間在等訂單進來</li>
+<li>必須有人（order taker ：) 等待新的訂單. 這是進入工廠的入口</li>
+<li>當蛋糕做好的時候必須有人來拿</li>
+</ol>
+</li>
+</ul>
+<p>來一段程式碼 ：</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;dart:async&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 代表比喻中工廠另一端所生產出來的蛋糕</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Cake</span></span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 代表比喻中裡面的訂單（消費者拿給order taker）</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Order</span></span>&#123; </span><br><span class="line">  <span class="built_in">String</span> type; <span class="comment">// 什麼樣類型的蛋糕</span></span><br><span class="line">  Order(<span class="keyword">this</span>.type);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> main() &#123;</span><br><span class="line">  <span class="comment">//1.自動生成sink和stream物件並指派給參考</span></span><br><span class="line">  <span class="keyword">var</span> controller = StreamController();</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//2.消費者有一個香蕉蛋糕的訂單</span></span><br><span class="line">  <span class="keyword">final</span> order = Order(<span class="string">&#x27;banana&#x27;</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//5.</span></span><br><span class="line">  <span class="keyword">final</span> baker = StreamTransformer.fromHandlers(</span><br><span class="line">    <span class="comment">//第一個參數為用來傳入order inspector所抽取的data event</span></span><br><span class="line">    <span class="comment">//第二個參數為sink, 用來將data event放回stream</span></span><br><span class="line">    handleData: (cakeType, sink) &#123;</span><br><span class="line">      <span class="comment">//如果抽取的資料和baker可以製作的元素型態是一致的就將</span></span><br><span class="line">      <span class="comment">//蛋糕(data event)放回sink當中變回stream</span></span><br><span class="line">      <span class="keyword">if</span> (cakeType == <span class="string">&#x27;chocolate&#x27;</span>) &#123;</span><br><span class="line">        <span class="comment">//這裡的sink和stream.sink的sink是不同的, 我們不會</span></span><br><span class="line">        <span class="comment">//從頭開始處理stream</span></span><br><span class="line">        sink.add(Cake());</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        sink.addError(<span class="string">&#x27;I cant bake that type!!!&#x27;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">  );</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//3.將訂單加入到sink裡面去 (order taker)</span></span><br><span class="line">  controller.sink.add(order);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//stream 代表工廠</span></span><br><span class="line">  <span class="comment">//map 將所有加入到stream裡面的元素(order)一一取出來</span></span><br><span class="line">  <span class="comment">//匿名函式 代表order inspector</span></span><br><span class="line">  <span class="comment">//他不關心進來的元素(訂單)是啥, 他抽取出她想要的</span></span><br><span class="line">  <span class="comment">//屬性(可以單一或是多個)或是改變(transform)進來的元素</span></span><br><span class="line">  <span class="comment">//這裡是抽取訂單裡的type屬性(String)並將它傳給baker</span></span><br><span class="line">  controller.stream</span><br><span class="line">    <span class="comment">//4. </span></span><br><span class="line">    .map((order) =&gt; order.type)</span><br><span class="line">    <span class="comment">//6. 將event塞回stream</span></span><br><span class="line">    .transform(baker)</span><br><span class="line">    <span class="comment">//7. 代表pickup offfice, 將stream裡面的元素取出</span></span><br><span class="line">    .listen( <span class="comment">//和stream是做綁定的</span></span><br><span class="line">    	<span class="comment">// 正確的data event這裡就是蛋糕</span></span><br><span class="line">        (cake) =&gt; <span class="built_in">print</span>(<span class="string">&#x27;Heres your cake <span class="subst">$cake</span>&#x27;</span>),</span><br><span class="line">    	<span class="comment">// 不正確的資料 error event</span></span><br><span class="line">    	onError: (err) =&gt; <span class="built_in">print</span>(err)</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>I cant bake your type!!!</p>
+</blockquote>
+<img src="https://i.imgur.com/PAwcvsJ.png" width="700" height="400" />
+
+<h4 id="什麼是-StreamController"><a href="#什麼是-StreamController" class="headerlink" title="什麼是 StreamController"></a>什麼是 StreamController</h4><ol>
+<li><p><code>StreamController</code> 有其中兩個屬性 <code>sink</code> 和 <code>stream</code></p>
+</li>
+<li><p>當 <code>StreamController</code> 被創建時, 會自動生成該兩個物件並指派</p>
+</li>
+<li><p><code>sink</code> 有能力將data傳入<code>stream</code>裡面</p>
+</li>
+<li><p>不能直接將資料傳給<code>stream</code>, 需要透過<code>sink</code>(order taker)</p>
+</li>
+</ol>
+<h4 id="總覽"><a href="#總覽" class="headerlink" title="總覽"></a>總覽</h4><p><img src="https://i.imgur.com/JX8YUp6.png"></p>
+<ul>
+<li><strong>Order Taker</strong> : <code>StreamController</code> 的 <code>sink.add</code> 函數 <ul>
+<li>功能 : 將加入的 event 提供給 stream 去處理</li>
+</ul>
+</li>
+<li><strong>Order Inspector</strong> : <code>stream</code> 的map函數<ul>
+<li>功能 : 檢視每一個進來 <code>stream</code> 的 event , 並加以處理(抽取或轉換)然後返回</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p><strong>Baker</strong> : <code>StreamTransformer</code></p>
+<ul>
+<li>功能 : 處理每一個進來的處理過的資料, 然後塞回<code>stream</code></li>
+</ul>
+</li>
+<li><p><strong>Pickup Office</strong> : <code>listen</code>函式</p>
+</li>
+</ul>
+<hr>
+<p><strong>map function 和 StreamTransformer 的差別</strong><br>相同 : </p>
+<ul>
+<li>都是用來處理 stream 裡面的 event</li>
+</ul>
+<p>不同 : </p>
+<ul>
+<li><code>map function</code> : 一對一的data進出</li>
+<li><code>StreamTransformer</code> : 一對多的資料進出(輸出多個資料)<ul>
+<li>更加彈性</li>
+<li>e.g. 可以呼叫多次 <code>sink.add</code> , 將 event data 加入到 stream</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="Why-Stream"><a href="#Why-Stream" class="headerlink" title="Why Stream ?"></a>Why Stream ?</h2><img src="https://i.imgur.com/FYyQ0LW.png" width="500" height="300" />
+
+<hr>
+<h4 id="緣起"><a href="#緣起" class="headerlink" title="緣起"></a>緣起</h4><p><code>Stream</code> 的處理方式看似複雜, 但在 flutter 或 dart 裡面經常會提供觸發的事件資料(透過 sink 放入 stream 裡面), 而無需自己製作. 我們只需創建另一個 <code>stream</code> 用</p>
+<hr>
+<p>來看一段程式碼 ：</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;dart:html&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> main() &#123;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">final</span> ButtonElement button = <span class="built_in">querySelector</span>(<span class="string">&#x27;button&#x27;</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// onClick方法會返回一個stream(在此之前, flutter/dart會幫我們</span></span><br><span class="line">  <span class="comment">//處理透過sink將事件塞入stream的過程)在每一次我們按按鈕時會射出一個事件</span></span><br><span class="line">  button.onClick</span><br><span class="line">    .timeout( <span class="comment">// 會創建一個新的stream(手動)</span></span><br><span class="line">  	<span class="built_in">Duration</span>(seconds: <span class="number">1</span>), <span class="comment">// 超過一秒中沒有新的事件</span></span><br><span class="line">    	<span class="comment">// 將事件加入到sink當中(sink 之後會交給新的stream)</span></span><br><span class="line">    	onTimeout: (sink) =&gt; sink.addError(<span class="string">&#x27;You lost!!!&#x27;</span>)</span><br><span class="line">    )</span><br><span class="line">    <span class="comment">// .map(event) =&gt; &#x27;sucess&#x27;) 可以加入這行做額外的轉換</span></span><br><span class="line">    .listen(</span><br><span class="line">        (event) &#123;&#125;,</span><br><span class="line">    	onError: (err) =&gt; <span class="built_in">print</span>(err)</span><br><span class="line">    );</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<!-- ![](https://i.imgur.com/kzM0rfr.png) -->
+<img src="https://i.imgur.com/kzM0rfr.png" width="600" height="400" />
+
+
+<h2 id="Stream-‘take’-and-‘where’-function"><a href="#Stream-‘take’-and-‘where’-function" class="headerlink" title="Stream ‘take’ and ‘where’ function ?"></a>Stream ‘take’ and ‘where’ function ?</h2><ul>
+<li><strong>take(int)</strong> - 當事件進入到 <code>stream</code> 的次數高達設定的數字時, <code>stream</code> 會被終止且發出結束事件(onDone)</li>
+<li><strong>where((){})</strong><ul>
+<li>事實上他就是<strong>過濾器</strong>, 專門過濾不符合匿名韓式裡寫的條件. <ul>
+<li>true : 保留該 event</li>
+<li>false : 忽略該 event</li>
+</ul>
+</li>
+<li>創建新的 <code>stream</code> 並將 event 塞入</li>
+</ul>
+</li>
+</ul>
+<img src="https://i.imgur.com/4797yCz.png" width="600" height="150" />
+
+<p>猜字遊戲 : 當猜到第四次仍沒有猜中就不可以再猜了ＸＸＤ</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;dart:html&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> main() &#123;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">final</span> ButtonElement button = <span class="built_in">querySelector</span>(<span class="string">&#x27;button&#x27;</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">final</span> InputElement input = <span class="built_in">querySelector</span>(<span class="string">&#x27;input&#x27;</span>);</span><br><span class="line">  </span><br><span class="line">  button.onClick</span><br><span class="line">    .take(<span class="number">4</span>) <span class="comment">//限制stream可以流進event的次數</span></span><br><span class="line">    <span class="comment">// event在這裡就只是表達按下按鈕的事件</span></span><br><span class="line">    <span class="comment">// 如果正確就將event傳下去, 反之就忽略該事件</span></span><br><span class="line">    .where((event) &#123;</span><br><span class="line">      <span class="keyword">var</span> test = input.value == <span class="string">&#x27;banana&#x27;</span>;</span><br><span class="line">      input.value = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">      <span class="keyword">return</span> test;</span><br><span class="line">    &#125;) <span class="comment">//創建一個stream</span></span><br><span class="line">    .listen(</span><br><span class="line">    	(event) =&gt; <span class="built_in">print</span>(<span class="string">&#x27;You win!!!&#x27;</span>),</span><br><span class="line">    	<span class="comment">// 當原始的stream已經傳入四次的event, 就終止該stream並傳遞結束事件</span></span><br><span class="line">    	onDone: () =&gt; <span class="built_in">print</span>(<span class="string">&#x27;Nope, bad guess&#x27;</span>)</span><br><span class="line">    );</span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>另外一個例子更可以展現 ：</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;dart:html&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">&#x27;dart:async&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> main() &#123;</span><br><span class="line">  <span class="keyword">final</span> InputElement input = <span class="built_in">querySelector</span>(<span class="string">&#x27;input&#x27;</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">final</span> DivElement div = <span class="built_in">querySelector</span>(<span class="string">&#x27;div&#x27;</span>);</span><br><span class="line">  </span><br><span class="line"><span class="comment">//   div.innerHtml = &#x27;Enter a valid email&#x27;;</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">final</span> validator = StreamTransformer.fromHandlers(</span><br><span class="line">  	handleData: (email, sink) &#123;</span><br><span class="line">      <span class="keyword">if</span> (email.contains(<span class="string">&#x27;@&#x27;</span>)) &#123;</span><br><span class="line">        sink.add(email);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        sink.addError(<span class="string">&#x27;Enter a valid email&#x27;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line">   </span><br><span class="line">  input.onInput</span><br><span class="line">    <span class="comment">//不管input event這個物件, 只抽取其中需要的資訊(email資料)</span></span><br><span class="line">    .map((<span class="built_in">dynamic</span> event) =&gt; event.target.value)</span><br><span class="line">    <span class="comment">//判斷event是否為正確的email, 將對或錯的結果分別寫入sink中</span></span><br><span class="line">    .transform(validator)</span><br><span class="line">    .listen(</span><br><span class="line">  	(event) =&gt; div.innerHtml = <span class="string">&#x27;&#x27;</span> ,</span><br><span class="line">    	onError: (err) =&gt; div.innerHtml = err</span><br><span class="line">    );</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<img src="https://i.imgur.com/WpeEWlc.png" width="700" height="400" />
+
+
+
+<h2 id="BLOC’s-vs-Stateful-widgets"><a href="#BLOC’s-vs-Stateful-widgets" class="headerlink" title="BLOC’s vs Stateful widgets"></a>BLOC’s vs Stateful widgets</h2><hr>
+<p><strong>前情提要</strong></p>
+<p><img src="https://i.imgur.com/u6YOVgL.png"></p>
+<hr>
+<h4 id="場景-：-BLOC-對於資訊共享於不同-widget-之間做出很好的處理"><a href="#場景-：-BLOC-對於資訊共享於不同-widget-之間做出很好的處理" class="headerlink" title="場景 ： BLOC 對於資訊共享於不同 widget 之間做出很好的處理"></a>場景 ： BLOC 對於資訊共享於不同 widget 之間做出很好的處理</h4><img src="https://i.imgur.com/wXiUEgw.png" width="700" height="400" />
+
+
+<ul>
+<li>整個 app 的 widget 結構<img src="https://i.imgur.com/QZ5VaZh.png" width="350" height="500" /></li>
+<li>當 LoginScreen 和 UserPreferences 都要共享下圖紅色圈起來的資料, 如果單純使用 stateful widgets 來寫會很複雜. 但是 bloc 可以輕易的解決 widget 和 widget 之間共享資料的難度</li>
+</ul>
+<hr>
+<p><strong>BLOC : Business logic component</strong> </p>
+<ol>
+<li><p>用來儲存所有資料(data)和狀態(state)在一個實體當中</p>
+</li>
+<li><p><code>bloc component</code> 並不需要app裡頭哪一個特定的widget做綁定</p>
+</li>
+<li><p>與 <code>widget</code> 是分離的, 並不會在 <code>widget tree</code> 的結構當中</p>
+</li>
+</ol>
+<!-- ![](https://i.imgur.com/XCpAL6M.png) -->
+<img src="https://i.imgur.com/XCpAL6M.png" width="700" height="400" />
+
+<hr>
+<h2 id="streams-在-bloc-裡頭的意義"><a href="#streams-在-bloc-裡頭的意義" class="headerlink" title="streams 在 bloc 裡頭的意義"></a>streams 在 bloc 裡頭的意義</h2><p>下圖是bloc和stream一起運作的概念 :<br><img src="https://i.imgur.com/31j8ZDR.png" width="700" height="300" /></p>
+<ul>
+<li><code>bloc</code> 可以看作是<strong>物流中心</strong>, 用來管理 app 所有數據和狀態的</li>
+<li><code>stream</code> 可以看作是各式各樣需要<strong>物流的產品</strong>, 在哪裡得到資訊？ 將資訊送往哪裡？</li>
+</ul>
+<p>下圖是app的結構 :<br><img src="https://i.imgur.com/9P2sqZK.png" width="500" height="500" /></p>
+<h2 id="Bloc-的應用"><a href="#Bloc-的應用" class="headerlink" title="Bloc 的應用"></a>Bloc 的應用</h2><p><code>TextField</code> 和 <code>bloc</code> 互相作用 :<br>    <img src="https://i.imgur.com/VdpNStC.png" width="700" height="400" /><br><code>bloc</code> 擁有兩個屬性 :</p>
+<ol>
+<li>Email StreamController</li>
+<li>Password StreamController</li>
+</ol>
+<p>對於如何應用 <code>bloc</code> 到 app 裏頭, 在 <code>state management</code> 尚未有一個統一的說法 : </p>
+<img src="https://i.imgur.com/YCksDI8.png" width="700" height="200" />
+
+<h4 id="1-Single-Global-Instance-適合用於在較小的項目當中"><a href="#1-Single-Global-Instance-適合用於在較小的項目當中" class="headerlink" title="1. Single Global Instance : 適合用於在較小的項目當中"></a>1. <strong>Single Global Instance</strong> : 適合用於在較小的項目當中</h4><img src="https://i.imgur.com/viyq6La.png" width="700" height="400" />
+
+<ul>
+<li><p>(中間) <code>app</code> 的 <code>widget</code> 結構</p>
+</li>
+<li><p>(右邊) <code>bloc.dart</code> 檔按裡面有一個 <code>Bloc</code> 類以及一個 <code>bloc</code> 實體</p>
+</li>
+<li><p><strong>在整個 app 中只有一份 (<code>final</code>)<code>bloc</code> 實體, 所以裡面所有的變數和狀態是共享的在所有使用到的  <code>widget</code> 當中</strong></p>
+</li>
+<li><p>開發上會非常方便且簡易但是會難以控制</p>
+</li>
+</ul>
+<h4 id="2-Scoped-Instance-適合在更大型且更複雜的項目底下開發"><a href="#2-Scoped-Instance-適合在更大型且更複雜的項目底下開發" class="headerlink" title="2. Scoped Instance : 適合在更大型且更複雜的項目底下開發"></a>2. <strong>Scoped Instance</strong> : 適合在更大型且更複雜的項目底下開發</h4><img src="https://i.imgur.com/yqHS6zH.png" width="700" height="400" />
+
+<ul>
+<li>不把 <code>bloc</code> 的實體放在 <code>bloc.dart</code> 檔案下來當作全域變數</li>
+<li>下面的 CustomWidget1~3 是任意的</li>
+<li><strong>將 bloc 放在需要的 widget 裡面, 而其子widget都可以存取到該 <code>bloc</code></strong></li>
+<li>不需將 bloc 實體暴露給整個 app 做使用</li>
+<li>這樣開發明顯會複雜許多但會得到更好的控制</li>
+</ul>
+<h2 id="StreamBuilder-consuming-stream"><a href="#StreamBuilder-consuming-stream" class="headerlink" title="StreamBuilder - consuming stream"></a>StreamBuilder - consuming stream</h2><ul>
+<li><p>定義 : 是一個可以將使用者定義的物件的串流轉成widget的widget</p>
+</li>
+<li><p>兩個參數 : </p>
+<ol>
+<li>stream : 要監測事件的 stream</li>
+<li>builder : <strong>將串流裡的元素轉換成 widget</strong> (builder function)<ul>
+<li><strong>觸發條件為當 stream 改變</strong> </li>
+</ul>
+</li>
+</ol>
+  <img src="https://i.imgur.com/Y9myG10.png" width="700" height="400" /></li>
+</ul>
+<hr>
+<p><strong>StreamBuilder 概述</strong></p>
+<ol>
+<li>Flutter 所提供的一個 widget</li>
+<li>將需要的 <code>Stream</code> 和 <code>StreamBuilder</code> 做綁定</li>
+<li><strong>當 <code>StreamBuiler</code> 偵測到一個新的事件從 <code>stream</code> 進來, 就調用 <code>builder function</code> (返回新的widget )並且重新渲染</strong></li>
+</ol>
+<h4 id="通常應用來更新-渲染-widget-取代原有使用-statefulWidget-的-setState"><a href="#通常應用來更新-渲染-widget-取代原有使用-statefulWidget-的-setState" class="headerlink" title="通常應用來更新(渲染) widget 取代原有使用 statefulWidget 的 setState()"></a>通常應用來更新(渲染) widget 取代原有使用 statefulWidget 的 setState()</h4><hr>
+<h2 id="context"><a href="#context" class="headerlink" title="context"></a>context</h2><img src="https://i.imgur.com/C5wQrPm.png" width="700" height="400" />
+
+<p><strong>概念</strong></p>
+<ol>
+<li><p>每一個widget都有自己獨立的 <code>context</code></p>
+</li>
+<li><p><code>context</code> 是一種標示符, 將該 widget 放置在正確的 widget 階層中(如上圖)</p>
+</li>
+<li><p>每一個 widget 都可以在 widget 階層中向上尋找任意的 widget</p>
+</li>
+<li><p>每一個 widget 都知道自己的 <code>context</code> 以及以上的 <code>context</code></p>
+</li>
+<li><p><code>context</code> 就像鏈結一樣, 該 <code>context</code> 知道他的上級而上級的 <code>context</code> 又知道他的上級…</p>
+</li>
+</ol>
+<p><strong>來看一段程式碼 :</strong> </p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;package:flutter/material.dart&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">&#x27;bloc.dart&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Provider</span> <span class="keyword">extends</span> <span class="title">InheritedWidget</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> bloc = Bloc();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">bool</span> updateShouldNotify(_) =&gt; <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//該方法簡單來說就是讓該widget底下的任意widget都可以連結到Provider</span></span><br><span class="line">  <span class="comment">//, 來對Bloc做存取</span></span><br><span class="line">  <span class="keyword">static</span> Bloc of(BuildContext context) &#123;</span><br><span class="line">    <span class="keyword">return</span> (context.inheritFromWidgetOfExactType(Provider) <span class="keyword">as</span> Provider).bloc;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>程式碼概述 :</strong></p>
+<ol>
+<li><p>在該 widget(<code>Provider</code>) 底下 widget tree 的任意 widget , 都可以藉由該 <code>of(BuilderContext)</code>  將自己的 <code>context</code> 傳入</p>
+</li>
+<li><p>該 <code>context</code> 有一個 <code>inheritFromWidgetOfExactType(Type typeTarget)</code> 方法, 用來向上尋找     widget 階層中類型為 <code>typeTarget</code> 的 widget.</p>
+</li>
+<li><p>找到後會返回一個 <code>InheritedWidget</code> 類型的 widget(物件) 並將他向下轉型為 <code>typeTarget</code></p>
+</li>
+</ol>
+<h2 id="How-to-merge-two-stream"><a href="#How-to-merge-two-stream" class="headerlink" title="How to merge two stream ?"></a>How to merge two stream ?</h2><p><strong>Case : 監聽兩個 <code>stream</code> 當達到一定的條件作出適當的響應</strong></p>
+<img src="https://i.imgur.com/7P6HCqf.png" width="700" height="400" />
+
+
+<h3 id="solution-to-merge-stream"><a href="#solution-to-merge-stream" class="headerlink" title="solution to merge stream"></a>solution to merge stream</h3><p><strong>有三種解決的辦法 :</strong></p>
+<img src="https://i.imgur.com/jnmv79E.png" width="700" height="400" />
+
+<p>下面有對RxDart有做詳細的解說</p>
+<h2 id="RxDart"><a href="#RxDart" class="headerlink" title="RxDart"></a>RxDart</h2><h3 id="Rx家族介紹"><a href="#Rx家族介紹" class="headerlink" title="Rx家族介紹"></a>Rx家族介紹</h3><img src="https://i.imgur.com/sNw65QO.png" width="700" height="400" />
+
+<ol>
+<li><p><strong>Rx</strong> 全名叫做 <a target="_blank" rel="noopener" href="http://reactivex.io/"><strong>ReactiveX</strong></a></p>
+</li>
+<li><p>有多種不同的版本套件</p>
+</li>
+<li><p>依據不同的程式語言去量身定做</p>
+</li>
+<li><p>架構在不同版本間基本上都是一樣</p>
+</li>
+<li><p>不同的術語在 RxDart</p>
+<ul>
+<li><code>Stream</code> 會變成 <code>Observable</code> <ul>
+<li>A wrapper class that extends to Stream</li>
+</ul>
+</li>
+<li><code>StreamController</code>會變成<code>Subject</code><ul>
+<li>A wrapper class that extends to StreamController</li>
+</ul>
+</li>
+</ul>
+<p> <br><img src="https://i.imgur.com/ZyF6DjD.png" width="700" height="400" /></p>
+</li>
+</ol>
+<hr>
+<p><strong>知識補給站</strong><br><code>BehaviorSubject</code> 是 <code>StreamController</code> 的一種. </p>
+<ol>
+<li><p>默認是 Broadcast controller , 所以他的 <code>stream</code> 是可以被監聽多次的</p>
+</li>
+<li><p>會紀錄最新加入 <code>sink</code> 的 event , 以便之後可以做存去使用. </p>
+</li>
+<li><p><strong>在 <code>Stream</code> 的處理方面加入許多延伸的功能</strong></p>
+</li>
+</ol>
+<p><strong>學習連結</strong></p>
+<p><a target="_blank" rel="noopener" href="https://pub.dartlang.org/documentation/rxdart/latest/"><strong>完全RxDart教學手冊</strong></a></p>
+<hr>
+<p><strong>回到正題 =&gt; 我們將用RxDart的 <code>combineLatest2()</code> 方法讓兩個 <code>stream</code> 做出合併處理</strong></p>
+<!-- ![](https://i.imgur.com/hAHWXuQ.png) -->
+<img src="https://i.imgur.com/hAHWXuQ.png" width="400" height="500" />
+
+<h4 id="combineLatest2-的機制圖解"><a href="#combineLatest2-的機制圖解" class="headerlink" title="combineLatest2() 的機制圖解"></a><code>combineLatest2()</code> 的機制圖解</h4><ul>
+<li><img src="https://i.imgur.com/h0kIBe9.png"><a target="_blank" rel="noopener" href="http://rxmarbles.com/#combineLatest">觀念圖示連結</a><ul>
+<li><strong><code>Observale</code> 直到要合併的兩個 <code>stream</code> 都各至少發出一個 event 才會發出 event</strong></li>
+</ul>
+</li>
+</ul>
+<h2 id="Bloc-總結"><a href="#Bloc-總結" class="headerlink" title="Bloc 總結"></a>Bloc 總結</h2><img src="https://i.imgur.com/3lJAeVY.png" width="700" height="400" />
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/iOS/" rel="tag"># iOS</a>
+              <a href="/tags/Flutter/" rel="tag"># Flutter</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/09/Flutter-%E7%AD%86%E8%A8%98-%E3%84%A7-%E5%9F%BA%E7%A4%8E%E8%AA%8D%E8%AD%98/" rel="prev" title="Flutter 筆記(ㄧ) - 基礎認識">
+      <i class="fa fa-chevron-left"></i> Flutter 筆記(ㄧ) - 基礎認識
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/07/09/%E4%BD%BF%E7%94%A8-Flutter-%E5%9C%A8-iOS-%E5%92%8C-Android-%E4%B8%8A%E8%A8%AD%E5%AE%9A-GoogleMap/" rel="next" title="使用 Flutter 在 iOS 和 Android  上設定 GoogleMap">
+      使用 Flutter 在 iOS 和 Android  上設定 GoogleMap <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Flutter-%E5%AE%8C%E6%95%B4%E9%96%8B%E7%99%BC%E6%9E%B6%E6%A7%8B"><span class="nav-number"></span> <span class="nav-text">Flutter 完整開發架構</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-%E5%88%9D%E8%AD%98"><span class="nav-number">1.</span> <span class="nav-text">Stream 初識</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%80%E9%BA%BC%E6%98%AF-StreamController"><span class="nav-number">1.0.1.</span> <span class="nav-text">什麼是 StreamController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B8%BD%E8%A6%BD"><span class="nav-number">1.0.2.</span> <span class="nav-text">總覽</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-Stream"><span class="nav-number">2.</span> <span class="nav-text">Why Stream ?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B7%A3%E8%B5%B7"><span class="nav-number">2.0.1.</span> <span class="nav-text">緣起</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-%E2%80%98take%E2%80%99-and-%E2%80%98where%E2%80%99-function"><span class="nav-number">3.</span> <span class="nav-text">Stream ‘take’ and ‘where’ function ?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BLOC%E2%80%99s-vs-Stateful-widgets"><span class="nav-number">4.</span> <span class="nav-text">BLOC’s vs Stateful widgets</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A0%B4%E6%99%AF-%EF%BC%9A-BLOC-%E5%B0%8D%E6%96%BC%E8%B3%87%E8%A8%8A%E5%85%B1%E4%BA%AB%E6%96%BC%E4%B8%8D%E5%90%8C-widget-%E4%B9%8B%E9%96%93%E5%81%9A%E5%87%BA%E5%BE%88%E5%A5%BD%E7%9A%84%E8%99%95%E7%90%86"><span class="nav-number">4.0.1.</span> <span class="nav-text">場景 ： BLOC 對於資訊共享於不同 widget 之間做出很好的處理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#streams-%E5%9C%A8-bloc-%E8%A3%A1%E9%A0%AD%E7%9A%84%E6%84%8F%E7%BE%A9"><span class="nav-number">5.</span> <span class="nav-text">streams 在 bloc 裡頭的意義</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bloc-%E7%9A%84%E6%87%89%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">Bloc 的應用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Single-Global-Instance-%E9%81%A9%E5%90%88%E7%94%A8%E6%96%BC%E5%9C%A8%E8%BC%83%E5%B0%8F%E7%9A%84%E9%A0%85%E7%9B%AE%E7%95%B6%E4%B8%AD"><span class="nav-number">6.0.1.</span> <span class="nav-text">1. Single Global Instance : 適合用於在較小的項目當中</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Scoped-Instance-%E9%81%A9%E5%90%88%E5%9C%A8%E6%9B%B4%E5%A4%A7%E5%9E%8B%E4%B8%94%E6%9B%B4%E8%A4%87%E9%9B%9C%E7%9A%84%E9%A0%85%E7%9B%AE%E5%BA%95%E4%B8%8B%E9%96%8B%E7%99%BC"><span class="nav-number">6.0.2.</span> <span class="nav-text">2. Scoped Instance : 適合在更大型且更複雜的項目底下開發</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StreamBuilder-consuming-stream"><span class="nav-number">7.</span> <span class="nav-text">StreamBuilder - consuming stream</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E5%B8%B8%E6%87%89%E7%94%A8%E4%BE%86%E6%9B%B4%E6%96%B0-%E6%B8%B2%E6%9F%93-widget-%E5%8F%96%E4%BB%A3%E5%8E%9F%E6%9C%89%E4%BD%BF%E7%94%A8-statefulWidget-%E7%9A%84-setState"><span class="nav-number">7.0.1.</span> <span class="nav-text">通常應用來更新(渲染) widget 取代原有使用 statefulWidget 的 setState()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#context"><span class="nav-number">8.</span> <span class="nav-text">context</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-merge-two-stream"><span class="nav-number">9.</span> <span class="nav-text">How to merge two stream ?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#solution-to-merge-stream"><span class="nav-number">9.1.</span> <span class="nav-text">solution to merge stream</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RxDart"><span class="nav-number">10.</span> <span class="nav-text">RxDart</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rx%E5%AE%B6%E6%97%8F%E4%BB%8B%E7%B4%B9"><span class="nav-number">10.1.</span> <span class="nav-text">Rx家族介紹</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#combineLatest2-%E7%9A%84%E6%A9%9F%E5%88%B6%E5%9C%96%E8%A7%A3"><span class="nav-number">10.1.1.</span> <span class="nav-text">combineLatest2() 的機制圖解</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bloc-%E7%B8%BD%E7%B5%90"><span class="nav-number">11.</span> <span class="nav-text">Bloc 總結</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="oliwave 歐理丸"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">oliwave 歐理丸</p>
+  <div class="site-description" itemprop="description">分享、學習</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/oliwave" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/@Oliwave1" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;@Oliwave1" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/oliwave" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-telegram"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.facebook.com/oliwaver" title="FB Page → https:&#x2F;&#x2F;www.facebook.com&#x2F;oliwaver" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oliwave 歐里丸</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
