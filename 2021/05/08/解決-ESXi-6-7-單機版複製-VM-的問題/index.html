@@ -22,18 +22,27 @@
     var CONFIG = {"hostname":"oliwave.github.io","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="分享、學習">
-<meta property="og:type" content="website">
-<meta property="og:title" content="歐里丸Blog">
-<meta property="og:url" content="http://oliwave.github.io/archives/2021/01/index.html">
+  <meta name="description" content="解決 ESXi 6.7 (Standalone) 複製 VM 的問題前言最近因為需要架設 Kubernetes 高可用的 Control Plane 叢集，因此想要複製多台 VMs 在 ESXi 上。但因為 ESXi (Standalone) 它並沒有提供其他可用的 Web UI 去配置，只能通過上傳 ovf 和 vmdk 檔案來建立新 VM ，所以會花掉大量的時間。因此最後只好使用 ssh 到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解決 ESXi 6.7 單機版複製 VM 的問題">
+<meta property="og:url" content="http://oliwave.github.io/2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/index.html">
 <meta property="og:site_name" content="歐里丸Blog">
-<meta property="og:description" content="分享、學習">
+<meta property="og:description" content="解決 ESXi 6.7 (Standalone) 複製 VM 的問題前言最近因為需要架設 Kubernetes 高可用的 Control Plane 叢集，因此想要複製多台 VMs 在 ESXi 上。但因為 ESXi (Standalone) 它並沒有提供其他可用的 Web UI 去配置，只能通過上傳 ovf 和 vmdk 檔案來建立新 VM ，所以會花掉大量的時間。因此最後只好使用 ssh 到">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://i.imgur.com/I7GUqjU.png">
+<meta property="og:image" content="https://i.imgur.com/S4HDqkN.png">
+<meta property="og:image" content="https://i.imgur.com/Twldkjp.png">
+<meta property="og:image" content="https://i.imgur.com/jJkLnmX.png">
+<meta property="og:image" content="https://i.imgur.com/csSlrxG.png">
+<meta property="og:image" content="https://i.imgur.com/Xy8tvnN.png">
+<meta property="article:published_time" content="2021-05-08T05:16:44.000Z">
+<meta property="article:modified_time" content="2021-05-08T09:10:54.842Z">
 <meta property="article:author" content="oliwave 歐理丸">
-<meta property="article:tag" content="flutter, golang, dart">
+<meta property="article:tag" content="ESXi 6.7 Standalone">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.imgur.com/I7GUqjU.png">
 
-<link rel="canonical" href="http://oliwave.github.io/archives/2021/01/">
+<link rel="canonical" href="http://oliwave.github.io/2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/">
 
 
 <script id="page-configurations">
@@ -41,11 +50,11 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false
+    isPost : true
   };
 </script>
 
-  <title>Archive | 歐里丸Blog</title>
+  <title>解決 ESXi 6.7 單機版複製 VM 的問題 | 歐里丸Blog</title>
   
 
 
@@ -182,49 +191,134 @@
           <div class="content">
             
 
+  <div class="posts-expand">
+      
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">Um..! 10 posts in total. Keep on posting.</span>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="oliwave 歐理丸">
+      <meta itemprop="description" content="分享、學習">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="歐里丸Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          解決 ESXi 6.7 單機版複製 VM 的問題
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-05-08 13:16:44 / Modified: 17:10:54" itemprop="dateCreated datePublished" datetime="2021-05-08T13:16:44+08:00">2021-05-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ESXi/" itemprop="url" rel="index"><span itemprop="name">ESXi</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <h2 class="collection-header">2021</h2>
+        <h1 id="解決-ESXi-6-7-Standalone-複製-VM-的問題"><a href="#解決-ESXi-6-7-Standalone-複製-VM-的問題" class="headerlink" title="解決 ESXi 6.7 (Standalone) 複製 VM 的問題"></a>解決 ESXi 6.7 (Standalone) 複製 VM 的問題</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近因為需要架設 Kubernetes 高可用的 Control Plane 叢集，因此想要複製多台 VMs 在 ESXi 上。但因為 ESXi (Standalone) 它並沒有提供其他可用的 Web UI 去配置，只能通過上傳 <code>ovf</code> 和 <code>vmdk</code> 檔案來建立新 VM ，所以會花掉大量的時間。因此最後只好使用 ssh 到 ESXi Manager 來設定。</p>
+<span id="more"></span>
+
+<h2 id="前置作業-Prerequisites"><a href="#前置作業-Prerequisites" class="headerlink" title="前置作業 Prerequisites"></a>前置作業 Prerequisites</h2><ul>
+<li><p>開啟 ESXi 的 SSh</p>
+<p>  <img src="https://i.imgur.com/I7GUqjU.png"></p>
+</li>
+</ul>
+<h2 id="複製-VM-的步驟"><a href="#複製-VM-的步驟" class="headerlink" title="複製 VM 的步驟"></a>複製 VM 的步驟</h2><ol>
+<li><p>將預備複製的 VM 先關機並<strong>建立快照</strong></p>
+<p> <img src="https://i.imgur.com/S4HDqkN.png"></p>
+</li>
+<li><p>切換目錄到 <code>/vmfs/volumes/datastore1</code></p>
+<blockquote>
+<p>cd /vmfs/volumes/datastore1</p>
+</blockquote>
+</li>
+<li><p>創建新 VM 的 <code>new_vm</code> 資料夾</p>
+<blockquote>
+<p>mkdir new_vm</p>
+</blockquote>
+</li>
+<li><p>由 origin 的快照去 clone 出一個新的 vm</p>
+<blockquote>
+<p>vmkfstools -i ./origin/origin-000001.vmdk ./new_vm/new_vm.vmdk -d thin -a buslogic</p>
+</blockquote>
+</li>
+<li><p>選擇 <strong>建立新的虛擬機器</strong></p>
+<p> <img src="https://i.imgur.com/Twldkjp.png"></p>
+</li>
+<li><p><strong>自訂設定</strong> -&gt; <strong>新增硬碟</strong> -&gt; <strong>現有硬碟</strong></p>
+<p> <img src="https://i.imgur.com/jJkLnmX.png"></p>
+</li>
+<li><p>選擇已經 clone 好的 <code>new_vm.vmdk</code></p>
+<p> <img src="https://i.imgur.com/csSlrxG.png"></p>
+</li>
+</ol>
+<ol start="8">
+<li><p>可以看已經有新增新的硬碟並可以調整各種資源的大小</p>
+<p> <img src="https://i.imgur.com/Xy8tvnN.png"></p>
+</li>
+<li><p>按下完成，恭喜 vm 建立成功！</p>
+</li>
+</ol>
+<h2 id="小小結論"><a href="#小小結論" class="headerlink" title="小小結論"></a>小小結論</h2><p>原則上 ESXi 單機版的 Web UI 還是有許多的限制（免費仔），因此可能經常會需要用 CLI 的方式跟 ESXi Manager 打交道！</p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2021-01-09T19:10:00+08:00"
-              content="2021-01-09">
-          01-09
-        </time>
-      </div>
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ESXi-6-7-Standalone/" rel="tag"># ESXi 6.7 Standalone</a>
+          </div>
 
-      <h3 class="post-title">
-          <a class="post-title-link" href="/2021/01/09/Container%20%E7%AE%A1%E7%90%86%20(%E7%AD%86%E8%A8%98%20%E4%BA%8C)%20-%20Kubernetes/" itemprop="url">
-            <span itemprop="name">Kubernetes 筆記 - Component 1</span>
-          </a>
-      </h3>
+        
 
-    </header>
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/14/Container-%E7%AE%A1%E7%90%86-%E7%AD%86%E8%A8%98-%E5%9B%9B-kubernetes-Component-%E4%B8%89/" rel="prev" title="kubernetes 筆記 - Component 3">
+      <i class="fa fa-chevron-left"></i> kubernetes 筆記 - Component 3
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
   </article>
+  
+  
+  
 
-
-    </div>
   </div>
-  
-  
-  
-
-  
-
 
 
           </div>
@@ -275,6 +369,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A3%E6%B1%BA-ESXi-6-7-Standalone-%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C"><span class="nav-number">1.</span> <span class="nav-text">解決 ESXi 6.7 (Standalone) 複製 VM 的問題</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E4%BD%9C%E6%A5%AD-Prerequisites"><span class="nav-number">1.2.</span> <span class="nav-text">前置作業 Prerequisites</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E6%AD%A5%E9%A9%9F"><span class="nav-number">1.3.</span> <span class="nav-text">複製 VM 的步驟</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E5%B0%8F%E7%B5%90%E8%AB%96"><span class="nav-number">1.4.</span> <span class="nav-text">小小結論</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

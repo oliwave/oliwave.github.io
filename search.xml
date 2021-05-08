@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>解決 ESXi 6.7 單機版複製 VM 的問題</title>
+      <link href="2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/"/>
+      <url>2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/</url>
+      
+        <content type="html"><![CDATA[<h1 id="解決-ESXi-6-7-Standalone-複製-VM-的問題"><a href="#解決-ESXi-6-7-Standalone-複製-VM-的問題" class="headerlink" title="解決 ESXi 6.7 (Standalone) 複製 VM 的問題"></a>解決 ESXi 6.7 (Standalone) 複製 VM 的問題</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近因為需要架設 Kubernetes 高可用的 Control Plane 叢集，因此想要複製多台 VMs 在 ESXi 上。但因為 ESXi (Standalone) 它並沒有提供其他可用的 Web UI 去配置，只能通過上傳 <code>ovf</code> 和 <code>vmdk</code> 檔案來建立新 VM ，所以會花掉大量的時間。因此最後只好使用 ssh 到 ESXi Manager 來設定。</p><span id="more"></span><h2 id="前置作業-Prerequisites"><a href="#前置作業-Prerequisites" class="headerlink" title="前置作業 Prerequisites"></a>前置作業 Prerequisites</h2><ul><li><p>開啟 ESXi 的 SSh</p><p>  <img src="https://i.imgur.com/I7GUqjU.png"></p></li></ul><h2 id="複製-VM-的步驟"><a href="#複製-VM-的步驟" class="headerlink" title="複製 VM 的步驟"></a>複製 VM 的步驟</h2><ol><li><p>將預備複製的 VM 先關機並<strong>建立快照</strong></p><p> <img src="https://i.imgur.com/S4HDqkN.png"></p></li><li><p>切換目錄到 <code>/vmfs/volumes/datastore1</code></p><blockquote><p>cd /vmfs/volumes/datastore1</p></blockquote></li><li><p>創建新 VM 的 <code>new_vm</code> 資料夾</p><blockquote><p>mkdir new_vm</p></blockquote></li><li><p>由 origin 的快照去 clone 出一個新的 vm</p><blockquote><p>vmkfstools -i ./origin/origin-000001.vmdk ./new_vm/new_vm.vmdk -d thin -a buslogic</p></blockquote></li><li><p>選擇 <strong>建立新的虛擬機器</strong></p><p> <img src="https://i.imgur.com/Twldkjp.png"></p></li><li><p><strong>自訂設定</strong> -&gt; <strong>新增硬碟</strong> -&gt; <strong>現有硬碟</strong></p><p> <img src="https://i.imgur.com/jJkLnmX.png"></p></li><li><p>選擇已經 clone 好的 <code>new_vm.vmdk</code></p><p> <img src="https://i.imgur.com/csSlrxG.png"></p></li></ol><ol start="8"><li><p>可以看已經有新增新的硬碟並可以調整各種資源的大小</p><p> <img src="https://i.imgur.com/Xy8tvnN.png"></p></li><li><p>按下完成，恭喜 vm 建立成功！</p></li></ol><h2 id="小小結論"><a href="#小小結論" class="headerlink" title="小小結論"></a>小小結論</h2><p>原則上 ESXi 單機版的 Web UI 還是有許多的限制（免費仔），因此可能經常會需要用 CLI 的方式跟 ESXi Manager 打交道！</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> ESXi </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> ESXi 6.7 Standalone </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>kubernetes 筆記 - Component 3</title>
       <link href="2021/03/14/Container-%E7%AE%A1%E7%90%86-%E7%AD%86%E8%A8%98-%E5%9B%9B-kubernetes-Component-%E4%B8%89/"/>
       <url>2021/03/14/Container-%E7%AE%A1%E7%90%86-%E7%AD%86%E8%A8%98-%E5%9B%9B-kubernetes-Component-%E4%B8%89/</url>
