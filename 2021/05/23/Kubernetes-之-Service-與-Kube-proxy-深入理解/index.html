@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://i.imgur.com/0JeNJqo.png">
 <meta property="og:image" content="https://i.imgur.com/UE8bQ8k.png">
 <meta property="article:published_time" content="2021-05-23T11:53:16.000Z">
-<meta property="article:modified_time" content="2021-05-26T11:49:42.493Z">
+<meta property="article:modified_time" content="2021-05-26T11:51:38.491Z">
 <meta property="article:author" content="oliwave 歐理丸">
 <meta property="article:tag" content="kube-proxy">
 <meta property="article:tag" content="iptables">
@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-05-26 19:49:42" itemprop="dateModified" datetime="2021-05-26T19:49:42+08:00">2021-05-26</time>
+                <time title="Modified: 2021-05-26 19:51:38" itemprop="dateModified" datetime="2021-05-26T19:51:38+08:00">2021-05-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -331,7 +331,7 @@
 </ul>
 <h4 id="Kube-proxy-如何處理沒有-Pod-的節點訪問自身"><a href="#Kube-proxy-如何處理沒有-Pod-的節點訪問自身" class="headerlink" title="Kube-proxy 如何處理沒有 Pod 的節點訪問自身"></a>Kube-proxy 如何處理沒有 Pod 的節點訪問自身</h4><p>由上面 iptables chains flow 可以很清楚的看到，像這樣子的訪問會經歷和 ClusterIP Service 一樣的路由方式。也就是使用機率抽籤，將去到 <code>service/my-nginx</code> 的網路流量隨機的路由到該 <code>Service</code> 所代理的 <code>Pod</code> 。</p>
 <p><img src="https://i.imgur.com/UE8bQ8k.png">（圖五）</p>
-<h2 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h2><p>Kubernetes 本身涵蓋許多的知識領域，而我個人認為網路的部分不論是在學習或是除錯上都相對的不容易。事實上，本篇只提及 <code>Service</code> 是如何透過 kube-proxy 和 iptables 來幫助我們實現封包的過濾和修改，至於封包如何透過 <a target="_blank" rel="noopener" href="https://github.com/containernetworking/cni">CNI</a> 在 <code>Pod</code> 或是 server 之間路由就是另一個故事了!</p>
+<h2 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h2><p>Kubernetes 本身涵蓋許多的知識領域，而我個人認為網路的部分不論是在學習或是除錯上都相對的不容易。事實上，本篇只提及 <code>Service</code> 是如何透過 kube-proxy 和 iptables 來幫助我們實現封包的過濾和修改，至於封包如何透過 <a target="_blank" rel="noopener" href="https://github.com/containernetworking/cni">CNI</a> 在 <code>Pod</code> 或是 server 之間路由又是另一個故事了!</p>
 
     </div>
 
