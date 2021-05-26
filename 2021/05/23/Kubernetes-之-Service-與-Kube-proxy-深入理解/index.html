@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"oliwave.github.io","root":"/","scheme":"Pisces","version":"7.7.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言學習 Kubernetes 的路上 Service 可以說是再常見不過的元件之一。我們都知道 Service 的目的就是提供單一的 endpoint 給 clients 去訪問其背後所代理的 Pods ，而今天我們就來探索 Kubernetes 到底如何實作它的吧！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kubernetes 之 Service 與 kube-proxy 深入理解">
+<meta property="og:url" content="http://oliwave.github.io/2021/05/23/Kubernetes-%E4%B9%8B-Service-%E8%88%87-Kube-proxy-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/index.html">
+<meta property="og:site_name" content="歐里丸Blog">
+<meta property="og:description" content="前言學習 Kubernetes 的路上 Service 可以說是再常見不過的元件之一。我們都知道 Service 的目的就是提供單一的 endpoint 給 clients 去訪問其背後所代理的 Pods ，而今天我們就來探索 Kubernetes 到底如何實作它的吧！">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://d33wubrfki0l68.cloudfront.net/27b2978647a8d7bdc2a96b213f0c0d3242ef9ce0/e8c9b/images/docs/services-iptables-overview.svg">
+<meta property="og:image" content="https://i.imgur.com/ZXXvi23.png">
+<meta property="og:image" content="https://i.imgur.com/vrlMlkR.png">
+<meta property="og:image" content="https://i.imgur.com/0JeNJqo.png">
+<meta property="og:image" content="https://i.imgur.com/UE8bQ8k.png">
+<meta property="article:published_time" content="2021-05-23T11:53:16.000Z">
+<meta property="article:modified_time" content="2021-05-25T15:16:26.663Z">
+<meta property="article:author" content="oliwave 歐理丸">
+<meta property="article:tag" content="iptables">
+<meta property="article:tag" content="kube-proxy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://d33wubrfki0l68.cloudfront.net/27b2978647a8d7bdc2a96b213f0c0d3242ef9ce0/e8c9b/images/docs/services-iptables-overview.svg">
+
+<link rel="canonical" href="http://oliwave.github.io/2021/05/23/Kubernetes-%E4%B9%8B-Service-%E8%88%87-Kube-proxy-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true
+  };
+</script>
+
+  <title>Kubernetes 之 Service 與 kube-proxy 深入理解 | 歐里丸Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">歐里丸Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">Learn by sharing</h1>
+      
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="search-pop-overlay">
+  <div class="popup search-popup">
+      <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+  </div>
+</div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2021/05/23/Kubernetes-%E4%B9%8B-Service-%E8%88%87-Kube-proxy-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="oliwave 歐理丸">
+      <meta itemprop="description" content="分享、學習">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="歐里丸Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          Kubernetes 之 Service 與 kube-proxy 深入理解
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-23 19:53:16" itemprop="dateCreated datePublished" datetime="2021-05-23T19:53:16+08:00">2021-05-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-05-25 23:16:26" itemprop="dateModified" datetime="2021-05-25T23:16:26+08:00">2021-05-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/" itemprop="url" rel="index"><span itemprop="name">Kubernetes</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>學習 Kubernetes 的路上 <code>Service</code> 可以說是再常見不過的元件之一。我們都知道 <code>Service</code> 的目的就是提供單一的 endpoint 給 clients 去訪問其背後所代理的 <code>Pods</code> ，而今天我們就來探索 Kubernetes 到底如何實作它的吧！</p>
+<span id="more"></span>
+
+<h2 id="初識-Service-原理"><a href="#初識-Service-原理" class="headerlink" title="初識 Service 原理"></a>初識 Service 原理</h2><p>可以從 <a target="_blank" rel="noopener" href="https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode-iptables">Kubernetes 官網</a>得知每個節點上都會運行一個 <code>kube-proxy</code> 。它主要負責監控 k8s control plane 上 Service 資源的新增與刪除，並根據以上的動作對本機的 iptables 進行 iptables rules 的修改。那麼這些 iptables rules 就是負責攔截前往 <code>Service</code> (<em>ClusterIP:port</em>) 的網路流量，並重新導向到 Service 所代理的其中一個 endpoint (<code>Pod</code>)。</p>
+<p><img src="https://d33wubrfki0l68.cloudfront.net/27b2978647a8d7bdc2a96b213f0c0d3242ef9ce0/e8c9b/images/docs/services-iptables-overview.svg" width="600" height="400"/>（圖一）</p>
+<p>由上述官方對 <code>Service</code> 的解釋，我們可以得知黑魔法就隱藏在 iptables 裏頭。也就是說不論網路封包如何的路由都逃不過 iptables flow chart（如圖二），至於細節請參考<a target="_blank" rel="noopener" href="http://linux.vbird.org/linux_server/0250simple_firewall.php">鳥哥的文章</a>。</p>
+<p><img src="https://i.imgur.com/ZXXvi23.png" width="600" height="500"/>（圖二）</p>
+<h2 id="問題情境"><a href="#問題情境" class="headerlink" title="問題情境"></a>問題情境</h2><p>基本上在使用 Kubernetes 的 <code>Service</code> 時有上面的觀念就游刃有餘了，但是如果要對它進行 debug 或是深入探討其實還是得打開 iptables 瞧瞧。最近就遇到一個神秘的問題 - <em>Nodeport Service 的 ExternalTrafficPolicy 設為 Local 時，如果從沒有 Pod 的節點（worker2）上去訪問節點自身的 IP 和 NodePort (worker2_IP:node_port) 時竟然也可以訪問的到服務</em>。</p>
+<p>如果理解 <code>externalTrafficPolicy: Local</code> 這個參數就知道，流量打進節點的 IP 和 NodePort 時不會使用預設的 random 方式去選擇 <code>Pod</code> ，而是<strong>就地</strong>存取該節點上 <code>Service</code> 所代理的 <code>Pod</code> ，那怎麼還會訪問的到呢？因此我就不得不打開節點的 iptables 來一探究竟，去追蹤 <code>kube-proxy</code> 到底設定了哪些 rules ！</p>
+<p><img src="https://i.imgur.com/vrlMlkR.png">（圖三）</p>
+<h2 id="K8s-cluster-系統環境描述"><a href="#K8s-cluster-系統環境描述" class="headerlink" title="K8s cluster 系統環境描述"></a>K8s cluster 系統環境描述</h2><p>以我的環境為範例使用 <code>kubectl get no,svc,po -owide</code> 得到以下資訊</p>
+<p><a target="_blank" rel="noopener" href="https://hackmd.io/fkajt27iSbSXFAwbZmrAEg">deployment 和 service 的 yaml 範例</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">NAME           STATUS   ROLES                  AGE    VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE            KERNEL-VERSION     CONTAINER-RUNTIME</span><br><span class="line">node&#x2F;master1   Ready    control-plane,master   5d1h   v1.21.0   172.20.20.12   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4. 0-73-generic   docker:&#x2F;&#x2F;20.10.2</span><br><span class="line">node&#x2F;master2   Ready    control-plane,master   5d1h   v1.21.0   172.20.20.13   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4. 0-73-generic   docker:&#x2F;&#x2F;20.10.2</span><br><span class="line">node&#x2F;master3   Ready    control-plane,master   5d1h   v1.21.0   172.20.20.14   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4. 0-73-generic   docker:&#x2F;&#x2F;20.10.2</span><br><span class="line">node&#x2F;worker1   Ready    &lt;none&gt;                 5d1h   v1.21.0   172.20.20.15   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4. 0-73-generic   docker:&#x2F;&#x2F;20.10.2</span><br><span class="line">node&#x2F;worker2   Ready    &lt;none&gt;                 5d1h   v1.21.0   172.20.20.16   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4. 0-73-generic   docker:&#x2F;&#x2F;20.10.2</span><br><span class="line">node&#x2F;worker3   Ready    &lt;none&gt;                 5d1h   v1.21.0   172.20.20.17   &lt;none&gt;        Ubuntu 20.04.2 LTS   5.4. 0-73-generic   docker:&#x2F;&#x2F;20.10.2</span><br><span class="line"></span><br><span class="line">NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE     SELECTOR</span><br><span class="line">service&#x2F;kubernetes   ClusterIP   10.96.0.1       &lt;none&gt;        443&#x2F;TCP        5d1h    &lt;none&gt;</span><br><span class="line">service&#x2F;my-nginx     NodePort    10.104.89.245   &lt;none&gt;        80:30294&#x2F;TCP   4d20h   run&#x3D;my-nginx</span><br><span class="line"></span><br><span class="line">NAME                            READY   STATUS    RESTARTS   AGE   IP           NODE      NOMINATED NODE   READINESSGATES</span><br><span class="line">pod&#x2F;my-nginx-5b56ccd65f-8rww7   1&#x2F;1     Running   0          5d    10.244.4.3   worker3   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">pod&#x2F;my-nginx-5b56ccd65f-bxh9v   1&#x2F;1     Running   0          5d    10.244.5.4   worker1   &lt;none&gt;           &lt;none&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="分析不同請求-iptables-flow-chart-的流程"><a href="#分析不同請求-iptables-flow-chart-的流程" class="headerlink" title="分析不同請求 iptables flow chart 的流程"></a>分析不同請求 iptables flow chart 的流程</h2><p>現在不僅要探討上面的問題，也藉此來深入理解 Service 是如何透過 iptables 來達成的吧！因此這裡主要分析 client request 使用以下三種方式來訪問 <code>service/my-nginx</code> 時，整個 iptables flow 到底經過哪些 chains (<em>以我的 k8s cluster 為範例</em>) :</p>
+<ol>
+<li><p>從 worker2 對本機發送的請求<br> <code>curl 172.20.20.16:30294</code></p>
+</li>
+<li><p>worker2 以外的主機對 worker2 發送的請求<br> <code>curl 172.20.20.16:30294</code></p>
+</li>
+<li><p>任意主機對 worker3 發送請求<br> <code>curl 172.20.20.17:30294</code></p>
+</li>
+</ol>
+<p><img src="https://i.imgur.com/0JeNJqo.png" width="800" height="500"/>（圖四）</p>
+<p>(<em><strong>下面案例的 iptables chains 已經重新排序並省略不在討論內的規則</strong></em>)</p>
+<h3 id="Case-1-worker2-對本機發送的請求"><a href="#Case-1-worker2-對本機發送的請求" class="headerlink" title="Case 1 : worker2 對本機發送的請求"></a>Case 1 : worker2 對本機發送的請求</h3><p>worker2 to worker2 的封包流向根據（圖四）是由 nat table 的 output chain 開始</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># worker2 iptables</span><br><span class="line"># NAT tables - OUTPUT chain</span><br><span class="line"></span><br><span class="line">1. -A OUTPUT -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES</span><br><span class="line"></span><br><span class="line">2. -A KUBE-SERVICES -m comment --comment &quot;kubernetes service nodeports; NOTE: this must be the last rule in this chain&quot; -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS</span><br><span class="line"></span><br><span class="line">3. -A KUBE-NODEPORTS -s 127.0.0.0&#x2F;8 -p tcp -m comment --comment &quot;default&#x2F;my-nginx&quot; -m tcp --dport 30294 -j KUBE-MARK-MASQ</span><br><span class="line"></span><br><span class="line">4. -A KUBE-MARK-MASQ -j MARK --set-xmark 0x4000&#x2F;0x4000</span><br><span class="line"></span><br><span class="line">5. -A KUBE-NODEPORTS -p tcp -m comment --comment &quot;default&#x2F;my-nginx&quot; -m tcp --dport 30294 -j KUBE-XLB-L65ENXXZWWSAPRCR</span><br><span class="line"></span><br><span class="line">6. -A KUBE-XLB-L65ENXXZWWSAPRCR -m comment --comment &quot;route LOCAL traffic for default&#x2F;my-nginx LB IP to service chain&quot; -m addrtype --src-type LOCAL -j KUBE-SVC-L65ENXXZWWSAPRCR</span><br><span class="line"></span><br><span class="line">7. -A KUBE-SVC-L65ENXXZWWSAPRCR -m comment --comment &quot;default&#x2F;my-nginx&quot; -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-HL43S2RPGOP5RW4C</span><br><span class="line">   -A KUBE-SVC-L65ENXXZWWSAPRCR -m comment --comment &quot;default&#x2F;my-nginx&quot; -j KUBE-SEP-CUCTBSPZ5432UVNG</span><br><span class="line">   </span><br><span class="line">8. -A KUBE-SEP-HL43S2RPGOP5RW4C -p tcp -m comment --comment &quot;default&#x2F;my-nginx&quot; -m tcp -j DNAT --to-destination 10.244.4.3:80</span><br><span class="line">   -A KUBE-SEP-CUCTBSPZ5432UVNG -p tcp -m comment --comment &quot;default&#x2F;my-nginx&quot; -m tcp -j DNAT --to-destination 10.244.5.4:80</span><br></pre></td></tr></table></figure>
+<p>(<a target="_blank" rel="noopener" href="https://i.imgur.com/rGk3YE7.png">iptables flow chart of worker2 to worker2</a>)</p>
+<ul>
+<li><p><code>1. ~ 4.</code> 將來源位址為 <code>127.0.0.0/8</code> 、傳輸層使用 tcp 以及目的埠號為 30294 的封包上標記 (mark) <code>0x4000/0x4000</code>。 mark 是為了將封包分類以方便之後的處理。</p>
+</li>
+<li><p><code>5. ~ 6.</code> 在 <code>KUBE-XLB-L65ENXXZWWSAPRCR</code> chain 中將封包來源為 LOCAL 的封包路由給 <code>KUBE-SVC-L65ENXXZWWSAPRCR</code> (也就是 <code>service/my-nginx</code>) </p>
+</li>
+<li><p><code>7.</code> 第一個規則表明只有 50% 的機會會從 <code>KUBE-SVC-L65ENXXZWWSAPRCR</code> 路由到 <code>KUBE-SEP-HL43S2RPGOP5RW4C</code> ，如果沒抽中則會路由到 <code>KUBE-SEP-CUCTBSPZ5432UVNG</code>。這兩個 KUBE-SEP-XXXX 事實上就是 <code>service/my-nginx</code> 所代理的兩個 <code>Pods</code></p>
+</li>
+<li><p><code>8.</code> 最後兩條規則會依據 <code>7.</code> 是執行哪條規則來將封包 <code>DNAT</code> 到 worker3 或是 worker1 上的 <code>Pod</code></p>
+</li>
+</ul>
+<h4 id="Kube-proxy-如何處理沒有-Pod-的節點訪問自身"><a href="#Kube-proxy-如何處理沒有-Pod-的節點訪問自身" class="headerlink" title="Kube-proxy 如何處理沒有 Pod 的節點訪問自身"></a>Kube-proxy 如何處理沒有 Pod 的節點訪問自身</h4><p>由上面 iptables chains flow 可以很清楚的看到，像這樣子的訪問會經歷和 ClusterIP Service 一樣的路由方式。也就是使用機率抽籤，將去到 <code>service/my-nginx</code> 的網路流量隨機的路由到該 <code>Service</code> 所代理的 <code>Pod</code> 。</p>
+<p><img src="https://i.imgur.com/UE8bQ8k.png">（圖五）</p>
+<h3 id="Case-2-worker2-以外的主機對-worker2-發送的請求"><a href="#Case-2-worker2-以外的主機對-worker2-發送的請求" class="headerlink" title="Case 2 : worker2 以外的主機對 worker2 發送的請求"></a>Case 2 : worker2 以外的主機對 worker2 發送的請求</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># worker2</span><br><span class="line"># NAT table - PREROUTING chain</span><br><span class="line"></span><br><span class="line">1. -A PREROUTING -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES</span><br><span class="line"></span><br><span class="line">2. -A KUBE-SERVICES -m comment --comment &quot;kubernetes service nodeports; NOTE: this must be the last rule in this chain&quot; -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS</span><br><span class="line"></span><br><span class="line">3. -A KUBE-NODEPORTS -p tcp -m comment --comment &quot;default&#x2F;my-nginx&quot; -m tcp --dport 30294 -j  KUBE-XLB-L65ENXXZWWSAPRCR</span><br><span class="line"></span><br><span class="line">4. -A KUBE-XLB-L65ENXXZWWSAPRCR -s 10.244.0.0&#x2F;16 -m comment --comment &quot;Redirect pods trying to reach external loadbalancer VIP to clusterIP&quot; -j KUBE-SVC-L65ENXXZWWSAPRCR</span><br><span class="line">   -A KUBE-XLB-L65ENXXZWWSAPRCR -m comment --comment &quot;masquerade LOCAL traffic for default&#x2F;my-nginx LB IP&quot; -m addrtype --src-type LOCAL -j KUBE-MARK-MASQ</span><br><span class="line">   -A KUBE-XLB-L65ENXXZWWSAPRCR -m comment --comment &quot;route LOCAL traffic for default&#x2F;my-nginx LB IP to service chain&quot; -m addrtype --src-type LOCAL -j KUBE-SVC-L65ENXXZWWSAPRCR</span><br><span class="line"></span><br><span class="line">5. -A KUBE-XLB-L65ENXXZWWSAPRCR -m comment --comment &quot;default&#x2F;my-nginx has no local endpoints&quot; -j KUBE-MARK-DROP</span><br><span class="line"></span><br><span class="line">6. -A KUBE-MARK-DROP -j MARK --set-xmark 0x8000&#x2F;0x8000</span><br></pre></td></tr></table></figure>
+<p>(<a target="_blank" rel="noopener" href="https://i.imgur.com/CM8VNmV.png">iptables flow chart of any host except worker2 to worker2</a>)</p>
+<ul>
+<li><p><code>1. ~ 2.</code> 封包符合目的位址為 LOCAL 所以會進入 <code>KUBE-NODEPORTS</code> chain</p>
+</li>
+<li><p><code>3.</code> 封包符合目的埠號為 30294 所以會進入 <code>KUBE-XLB-L65ENXXZWWSAPRCR</code> chain</p>
+</li>
+<li><p><code>4.</code> 封包並不符合來源位址是 <code>10.244.0.0/16</code> 或是本機，因此會<em>直接跳過</em>這些歸則</p>
+</li>
+<li><p><code>5. ~ 6.</code> 封包符合來自 worker2 或是 <code>10.244.0.0/16</code> <strong>以外</strong>的封包，所以會進入 <code>KUBE-MARK-DROP</code> chain 並且被標記上 <code>0x8000/0x8000</code></p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># worker2</span><br><span class="line"># FILTER table - INPUT chain</span><br><span class="line"></span><br><span class="line">6. -A INPUT -j KUBE-FIREWALL</span><br><span class="line"></span><br><span class="line">7. -A KUBE-FIREWALL -m comment --comment &quot;kubernetes firewall for dropping marked packets&quot; -m mark --mark 0x8000&#x2F;0x8000 -j DROP</span><br></pre></td></tr></table></figure>
+<p>在封包正式進入主機之前還會經過 filter table 的 input chain 做過濾</p>
+<ul>
+<li><p><code>6.</code> 任何封包進入主機前都先進 <code>KUBE-FIREWALL</code> chain 做檢查</p>
+</li>
+<li><p><code>7.</code> 這條規則很明確的表示凡帶有 mark 為 <code>0x8000/0x8000</code> 的封包都會被 <code>DROP</code> ，因此在 <code>5. ~ 6.</code> 所執行的標記就會導致該封包被丟棄</p>
+</li>
+</ul>
+<h3 id="Case-3-任意主機對-worker3-發送請求"><a href="#Case-3-任意主機對-worker3-發送請求" class="headerlink" title="Case 3 : 任意主機對 worker3 發送請求"></a>Case 3 : 任意主機對 worker3 發送請求</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># worker3</span><br><span class="line"># NAT table - PREROUTING chain</span><br><span class="line"></span><br><span class="line">1. -A PREROUTING -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES</span><br><span class="line"></span><br><span class="line">2. -A KUBE-SERVICES -m comment --comment &quot;kubernetes service nodeports; NOTE: this must be the last rule in this chain&quot; -m addrtype --dst-type LOCAL -j KUBE-NODEPORTS</span><br><span class="line"></span><br><span class="line">3. -A KUBE-NODEPORTS -p tcp -m comment --comment &quot;default&#x2F;my-nginx&quot; -m tcp --dport 30294 -j KUBE-XLB-L65ENXXZWWSAPRCR</span><br><span class="line"></span><br><span class="line">4. -A KUBE-XLB-L65ENXXZWWSAPRCR -m comment --comment &quot;Balancing rule 0 for default&#x2F;my-nginx&quot; -j KUBE-SEP-HL43S2RPGOP5RW4C</span><br><span class="line"></span><br><span class="line">5. -A KUBE-SEP-HL43S2RPGOP5RW4C -p tcp -m comment --comment &quot;default&#x2F;my-nginx&quot; -m tcp -j DNAT --to-destination 10.244.4.3:80</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://i.imgur.com/Ou9ykvN.png">iptables flow chart of any host to worker3</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/iptables/" rel="tag"># iptables</a>
+              <a href="/tags/kube-proxy/" rel="tag"># kube-proxy</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/" rel="prev" title="解決 ESXi 6.7 單機版複製 VM 的問題">
+      <i class="fa fa-chevron-left"></i> 解決 ESXi 6.7 單機版複製 VM 的問題
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E8%AD%98-Service-%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">初識 Service 原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%95%8F%E9%A1%8C%E6%83%85%E5%A2%83"><span class="nav-number">3.</span> <span class="nav-text">問題情境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#K8s-cluster-%E7%B3%BB%E7%B5%B1%E7%92%B0%E5%A2%83%E6%8F%8F%E8%BF%B0"><span class="nav-number">4.</span> <span class="nav-text">K8s cluster 系統環境描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E4%B8%8D%E5%90%8C%E8%AB%8B%E6%B1%82-iptables-flow-chart-%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="nav-number">5.</span> <span class="nav-text">分析不同請求 iptables flow chart 的流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Case-1-worker2-%E5%B0%8D%E6%9C%AC%E6%A9%9F%E7%99%BC%E9%80%81%E7%9A%84%E8%AB%8B%E6%B1%82"><span class="nav-number">5.1.</span> <span class="nav-text">Case 1 : worker2 對本機發送的請求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Kube-proxy-%E5%A6%82%E4%BD%95%E8%99%95%E7%90%86%E6%B2%92%E6%9C%89-Pod-%E7%9A%84%E7%AF%80%E9%BB%9E%E8%A8%AA%E5%95%8F%E8%87%AA%E8%BA%AB"><span class="nav-number">5.1.1.</span> <span class="nav-text">Kube-proxy 如何處理沒有 Pod 的節點訪問自身</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Case-2-worker2-%E4%BB%A5%E5%A4%96%E7%9A%84%E4%B8%BB%E6%A9%9F%E5%B0%8D-worker2-%E7%99%BC%E9%80%81%E7%9A%84%E8%AB%8B%E6%B1%82"><span class="nav-number">5.2.</span> <span class="nav-text">Case 2 : worker2 以外的主機對 worker2 發送的請求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Case-3-%E4%BB%BB%E6%84%8F%E4%B8%BB%E6%A9%9F%E5%B0%8D-worker3-%E7%99%BC%E9%80%81%E8%AB%8B%E6%B1%82"><span class="nav-number">5.3.</span> <span class="nav-text">Case 3 : 任意主機對 worker3 發送請求</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="oliwave 歐理丸"
+      src="/images/avatar.jpeg">
+  <p class="site-author-name" itemprop="name">oliwave 歐理丸</p>
+  <div class="site-description" itemprop="description">分享、學習</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/oliwave" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/@Oliwave1" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;@Oliwave1" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/oliwave" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;oliwave" rel="noopener" target="_blank"><i class="fa fa-fw fa-telegram"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.facebook.com/oliwaver" title="FB Page → https:&#x2F;&#x2F;www.facebook.com&#x2F;oliwaver" rel="noopener" target="_blank"><i class="fa fa-fw fa-facebook"></i></a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oliwave 歐里丸</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

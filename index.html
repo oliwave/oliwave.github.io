@@ -187,6 +187,87 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en-US">
+    <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2021/05/23/Kubernetes-%E4%B9%8B-Service-%E8%88%87-Kube-proxy-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+      <meta itemprop="name" content="oliwave 歐理丸">
+      <meta itemprop="description" content="分享、學習">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="歐里丸Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/05/23/Kubernetes-%E4%B9%8B-Service-%E8%88%87-Kube-proxy-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/" class="post-title-link" itemprop="url">Kubernetes 之 Service 與 kube-proxy 深入理解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-05-23 19:53:16" itemprop="dateCreated datePublished" datetime="2021-05-23T19:53:16+08:00">2021-05-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-05-25 23:16:26" itemprop="dateModified" datetime="2021-05-25T23:16:26+08:00">2021-05-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kubernetes/" itemprop="url" rel="index"><span itemprop="name">Kubernetes</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>學習 Kubernetes 的路上 <code>Service</code> 可以說是再常見不過的元件之一。我們都知道 <code>Service</code> 的目的就是提供單一的 endpoint 給 clients 去訪問其背後所代理的 <code>Pods</code> ，而今天我們就來探索 Kubernetes 到底如何實作它的吧！</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/05/23/Kubernetes-%E4%B9%8B-Service-%E8%88%87-Kube-proxy-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en-US">
     <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -210,10 +291,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
-              
 
-              <time title="Created: 2021-05-08 13:16:44 / Modified: 17:10:54" itemprop="dateCreated datePublished" datetime="2021-05-08T13:16:44+08:00">2021-05-08</time>
+              <time title="Created: 2021-05-08 13:16:44" itemprop="dateCreated datePublished" datetime="2021-05-08T13:16:44+08:00">2021-05-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-05-23 21:02:01" itemprop="dateModified" datetime="2021-05-23T21:02:01+08:00">2021-05-23</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -235,7 +322,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="解決-ESXi-6-7-Standalone-複製-VM-的問題"><a href="#解決-ESXi-6-7-Standalone-複製-VM-的問題" class="headerlink" title="解決 ESXi 6.7 (Standalone) 複製 VM 的問題"></a>解決 ESXi 6.7 (Standalone) 複製 VM 的問題</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近因為需要架設 Kubernetes 高可用的 Control Plane 叢集，因此想要複製多台 VMs 在 ESXi 上。但因為 ESXi (Standalone) 它並沒有提供其他可用的 Web UI 去配置，只能通過上傳 <code>ovf</code> 和 <code>vmdk</code> 檔案來建立新 VM ，所以會花掉大量的時間。因此最後只好使用 ssh 到 ESXi Manager 來設定。</p>
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近因為需要架設 Kubernetes 高可用的 Control Plane 叢集，因此想要複製多台 VMs 在 ESXi 上。但因為 ESXi (Standalone) 它並沒有提供其他可用的 Web UI 去配置，只能通過上傳 <code>ovf</code> 和 <code>vmdk</code> 檔案來建立新 VM ，所以會花掉大量的時間。因此最後只好使用 ssh 到 ESXi Manager 來設定。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/#more" rel="contents">
@@ -916,90 +1003,12 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="en-US">
-    <link itemprop="mainEntityOfPage" href="http://oliwave.github.io/2020/03/11/%E6%8E%A8%E6%92%AD%E9%80%9A%E7%9F%A5-Push-Notification-%E6%94%B9%E8%AE%8A%E6%89%8B%E6%A9%9F%E6%87%89%E7%94%A8%E7%9A%84%E6%8A%80%E8%A1%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-      <meta itemprop="name" content="oliwave 歐理丸">
-      <meta itemprop="description" content="分享、學習">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="歐里丸Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/11/%E6%8E%A8%E6%92%AD%E9%80%9A%E7%9F%A5-Push-Notification-%E6%94%B9%E8%AE%8A%E6%89%8B%E6%A9%9F%E6%87%89%E7%94%A8%E7%9A%84%E6%8A%80%E8%A1%93/" class="post-title-link" itemprop="url">推播通知 Push Notification - 改變手機應用的技術</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-03-11 23:36:00" itemprop="dateCreated datePublished" datetime="2020-03-11T23:36:00+08:00">2020-03-11</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-03-12 00:00:23" itemprop="dateModified" datetime="2020-03-12T00:00:23+08:00">2020-03-12</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Node-js/" itemprop="url" rel="index"><span itemprop="name">Node.js</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>相信許多人起床的第一件事就是滑滑手機的通知，看一下有沒有新的 email 或訊息，甚至是購物平台的特價活動等等。最後再決定要不要打開那個應用程式或是一鍵清除。<em>所以如果這項技術不在我們的生活中，那我們的手機將會比宇宙還要安靜。</em> 透過伺服器主動發送訊息到客戶的手機，讓使用者可以及時地獲得各項服務的訊息通知。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2020/03/11/%E6%8E%A8%E6%92%AD%E9%80%9A%E7%9F%A5-Push-Notification-%E6%94%B9%E8%AE%8A%E6%89%8B%E6%A9%9F%E6%87%89%E7%94%A8%E7%9A%84%E6%8A%80%E8%A1%93/#more" rel="contents">
-                Read more &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+  </nav>
 
 
 
@@ -1066,7 +1075,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1077,7 +1086,7 @@
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

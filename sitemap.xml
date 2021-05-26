@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://oliwave.github.io/2021/05/23/Kubernetes-%E4%B9%8B-Service-%E8%88%87-Kube-proxy-%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3/</loc>
+    
+    <lastmod>2021-05-25</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://oliwave.github.io/2021/05/08/%E8%A7%A3%E6%B1%BA-ESXi-6-7-%E5%96%AE%E6%A9%9F%E7%89%88%E8%A4%87%E8%A3%BD-VM-%E7%9A%84%E5%95%8F%E9%A1%8C/</loc>
     
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-23</lastmod>
     
   </url>
   
@@ -95,7 +102,7 @@
 
   <url>
     <loc>http://oliwave.github.io/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -103,70 +110,84 @@
   
   <url>
     <loc>http://oliwave.github.io/tags/Microservice/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Kubernetes/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Android/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/iOS/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Flutter/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Google-Map/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Google-Play-services/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Firebase-Cloud-Messaging/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Node-js/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/ESXi-6-7-Standalone/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://oliwave.github.io/tags/iptables/</loc>
+    <lastmod>2021-05-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://oliwave.github.io/tags/kube-proxy/</loc>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -175,28 +196,28 @@
   
   <url>
     <loc>http://oliwave.github.io/categories/Kubernetes/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/categories/Flutter/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/categories/Node-js/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/categories/ESXi/</loc>
-    <lastmod>2021-05-08</lastmod>
+    <lastmod>2021-05-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
