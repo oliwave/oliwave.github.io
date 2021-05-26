@@ -20,9 +20,9 @@
       
         <tags>
             
-            <tag> iptables </tag>
-            
             <tag> kube-proxy </tag>
+            
+            <tag> iptables </tag>
             
         </tags>
       
