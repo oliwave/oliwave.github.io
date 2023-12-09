@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.2">
+<meta name="generator" content="Hexo 7.0.0">
 <meta name="google-site-verification" content="k814B6oZZdFhzRqptaxJWhC9CcI4nSpIoHJqgp5X-4c" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
@@ -273,7 +273,7 @@
 </li>
 <li><p>切換目錄到 <code>/vmfs/volumes/datastore1</code></p>
 <blockquote>
-<p>cd /vmfs/volumes/datastore1</p>
+<p>cd &#x2F;vmfs&#x2F;volumes&#x2F;datastore1</p>
 </blockquote>
 </li>
 <li><p>創建新 VM 的 <code>new_vm</code> 資料夾</p>
@@ -283,7 +283,8 @@
 </li>
 <li><p>由 origin 的快照去 clone 出一個新的 vm</p>
 <blockquote>
-<p>vmkfstools -i ./origin/origin-000001.vmdk ./new_vm/new_vm.vmdk -d thin -a buslogic</p>
+<p>vmkfstools -i .&#x2F;origin&#x2F;origin-000001.vmdk .&#x2F;new_vm&#x2F;new_vm.vmdk -d thin -a buslogic
+ </p>
 </blockquote>
 </li>
 <li><p>選擇 <strong>建立新的虛擬機器</strong></p>
@@ -293,10 +294,8 @@
 <p> <img src="https://i.imgur.com/jJkLnmX.png"></p>
 </li>
 <li><p>選擇已經 clone 好的 <code>new_vm.vmdk</code></p>
-<p> <img src="https://i.imgur.com/csSlrxG.png"></p>
+<p><img src="https://i.imgur.com/csSlrxG.png"></p>
 </li>
-</ol>
-<ol start="8">
 <li><p>可以看已經有新增新的硬碟並可以調整各種資源的大小</p>
 <p> <img src="https://i.imgur.com/Xy8tvnN.png"></p>
 </li>
