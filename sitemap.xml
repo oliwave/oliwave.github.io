@@ -102,7 +102,7 @@
 
   <url>
     <loc>http://oliwave.github.io/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -110,84 +110,84 @@
   
   <url>
     <loc>http://oliwave.github.io/tags/Microservice/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Kubernetes/</loc>
-    <lastmod>2023-12-08</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://oliwave.github.io/tags/kube-proxy/</loc>
-    <lastmod>2023-12-08</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>http://oliwave.github.io/tags/iptables/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Android/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/iOS/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Flutter/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://oliwave.github.io/tags/kube-proxy/</loc>
+    <lastmod>2023-12-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>http://oliwave.github.io/tags/iptables/</loc>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Google-Map/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Google-Play-services/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Firebase-Cloud-Messaging/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/Node-js/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/tags/ESXi-6-7-Standalone/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -196,28 +196,28 @@
   
   <url>
     <loc>http://oliwave.github.io/categories/Kubernetes/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/categories/Flutter/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/categories/Node-js/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
     <loc>http://oliwave.github.io/categories/ESXi/</loc>
-    <lastmod>2023-12-08</lastmod>
+    <lastmod>2023-12-09</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
