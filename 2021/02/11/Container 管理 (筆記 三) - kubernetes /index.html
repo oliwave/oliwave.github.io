@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 7.0.0">
+<meta name="generator" content="Hexo 5.4.2">
 <meta name="google-site-verification" content="k814B6oZZdFhzRqptaxJWhC9CcI4nSpIoHJqgp5X-4c" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
@@ -283,17 +283,15 @@
 
 <hr>
 <ol>
-<li><p>在 cluster 中若需要 <strong><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/tasks/access-application-cluster/connecting-frontend-backend/"><code>pod-to-pod</code></a></strong> 請求中，<strong>請使用 Service 的 name 作為 hostname 而非 Pod ip 。</strong></p>
-<ul>
-<li>因為你非但不能在 Pod 被建立以前知道他的 IP ，即使可以 Pod 隨時都有可能重啟或重新部署而改變 IP。</li>
+<li>在 cluster 中若需要 <strong><a target="_blank" rel="noopener" href="https://kubernetes.io/docs/tasks/access-application-cluster/connecting-frontend-backend/"><code>pod-to-pod</code></a></strong> 請求中，<strong>請使用 Service 的 name 作為 hostname 而非 Pod ip 。</strong><ul>
+<li> 因為你非但不能在 Pod 被建立以前知道他的 IP ，即使可以 Pod 隨時都有可能重啟或重新部署而改變 IP。</li>
 <li><blockquote>
 <p><a target="_blank" rel="noopener" href="http://kubia/">http://kubia</a>.&lt;namespace&gt;</p>
 </blockquote>
 </li>
 </ul>
 </li>
-<li><p><code>sessionAffinity</code>  只有 ClientIP 和 None 兩種模式，<strong>並沒有 cookie-based</strong> 。因為 K8s Service 是在 L4 而非 L7 所以只有 TCP 和 UDP</p>
-</li>
+<li><code>sessionAffinity</code>  只有 ClientIP 和 None 兩種模式，<strong>並沒有 cookie-based</strong> 。因為 K8s Service 是在 L4 而非 L7 所以只有 TCP 和 UDP</li>
 </ol>
 <hr>
 <h3 id="多埠-Service-物件"><a href="#多埠-Service-物件" class="headerlink" title="多埠 Service 物件"></a>多埠 Service 物件</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span> </span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span> <span class="comment"># 外部 80 轉送到內部 8080</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">8080</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">https</span> <span class="comment"># 443 轉送到 8443</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">443</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">8443</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br></pre></td></tr></table></figure>
@@ -379,9 +377,8 @@
 <hr>
 <h3 id="自己設定-Service-Endpoints-的時機：連線到外部網路的服務"><a href="#自己設定-Service-Endpoints-的時機：連線到外部網路的服務" class="headerlink" title="自己設定 Service Endpoints 的時機：連線到外部網路的服務"></a>自己設定 Service Endpoints 的時機：連線到外部網路的服務</h3><ol>
 <li><p>創建一個沒有 selector 的 Service</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">google-map</span> <span class="comment"># Service 的名字必須和 Endpoints 一樣</span></span><br><span class="line"><span class="attr">spec:</span>  <span class="comment"># 無需定義 selector</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>為沒有 selector 的 Service 創建 Endpoints</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">google-map</span> <span class="comment"># Service 的名字必須和 Endpoints 一樣</span></span><br><span class="line"><span class="attr">spec:</span>  <span class="comment"># 無需定義 selector</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></li>
+<li><p> 為沒有 selector 的 Service 創建 Endpoints</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Endpoints</span> </span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">google-map</span> <span class="comment"># Endpoints 的名字必須和 Service 的一樣</span></span><br><span class="line"><span class="attr">subsets:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">addresses:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">ip:</span> <span class="number">11.11</span><span class="number">.11</span><span class="number">.11</span> <span class="comment"># Service 將連接轉發到的端點的 IP</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">ip:</span> <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span> </span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></li>
 </ol>
 <p><img src="https://i.imgur.com/ejnt4Nc.png" width="800" height="400" /></br></p>

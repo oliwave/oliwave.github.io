@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 7.0.0">
+<meta name="generator" content="Hexo 5.4.2">
 <meta name="google-site-verification" content="k814B6oZZdFhzRqptaxJWhC9CcI4nSpIoHJqgp5X-4c" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
@@ -265,10 +265,10 @@
 <span id="more"></span>
 
 <h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><ul>
-<li><p>在Flutter裡面, 幾乎所有東西都是小部件, 包括 alignment, padding </p>
-</li>
-<li><p><strong>Stateless widgets</strong> 是不可變的, 也就是說所有的屬性都不能改變 - <strong>所有的數值都是final</strong></p>
-</li>
+<li>在Flutter裡面, 幾乎所有東西都是小部件, 包括 alignment, padding </li>
+<li><strong>Stateless widgets</strong> 是不可變的, 也就是說所有的屬性都不能改變 - <strong>所有的數值都是final</strong></li>
+</ul>
+<ul>
 <li><p><strong>Stateful widgets</strong> 維護在 widget 的生命週期中可能會改變的狀態(使用者交互, 更新資料等等)</p>
 <ul>
 <li><p>實作一個 <code>Stateful widget</code> 需要至少兩個 class : </p>
@@ -301,7 +301,7 @@
 <li><p>添加依賴</p>
 <ul>
 <li><blockquote>
-<p>import ‘package:flutter&#x2F;rendering.dart’;</p>
+<p>import ‘package:flutter/rendering.dart’; </p>
 </blockquote>
 </li>
 </ul>
@@ -309,7 +309,7 @@
 <li><p>在<code>main</code>裡面呼叫UI debugger</p>
 <ul>
 <li><blockquote>
-<p>debugPaintSizeEnabled &#x3D; true;</p>
+<p>debugPaintSizeEnabled = true;</p>
 </blockquote>
 </li>
 </ul>
@@ -333,32 +333,30 @@
   </li>
 <li><p>可以大概簡化成</p>
 <ul>
-<li><p><img src="https://i.imgur.com/ej0nkJf.png"></p>
-</li>
-<li><p><strong>Material Cupertino &amp; widget</strong> 是最上層也最常接觸到的一層</p>
-<ul>
+<li><img src="https://i.imgur.com/ej0nkJf.png"></li>
+<li><strong>Material Cupertino &amp; widget</strong> 是最上層也最常接觸到的一層<ul>
 <li>e.g. 像是 <code>Scaffold</code> &amp; <code>FloatingActionButton</code> … 是屬於 <code>Material</code> 庫 ; <code>Column</code> &amp; <code>GestureDetector</code> … 是屬於 <code>Widgets</code> 庫</li>
 </ul>
 </li>
-<li><p><strong>rendering layer</strong> 主要負責簡化外觀渲染的工作</p>
-</li>
-<li><p><strong>dart:ui</strong> 就是基本負責與更底層的 <code>Flutter engine</code> 溝通</p>
-</li>
+<li><strong>rendering layer</strong> 主要負責簡化外觀渲染的工作</li>
+<li><strong>dart:ui</strong> 就是基本負責與更底層的 <code>Flutter engine</code> 溝通</li>
 </ul>
 </li>
 </ul>
 <hr>
-<h2 id="小結越上層越容易控制使用，但越下層可以有更多複雜度的精細掌握"><a href="#小結越上層越容易控制使用，但越下層可以有更多複雜度的精細掌握" class="headerlink" title="小結越上層越容易控制使用，但越下層可以有更多複雜度的精細掌握"></a><strong>小結</strong><br>越上層越容易控制使用，但越下層可以有更多複雜度的精細掌握</h2><h3 id="dart-ui"><a href="#dart-ui" class="headerlink" title="dart:ui"></a>dart:ui</h3><hr>
-<h2 id="功能該-lib-提供最底層的服務給-Flutter-框架用來引導整個應用程式，像是提供類別來驅動輸入-圖像文字-外觀-還有渲染系統"><a href="#功能該-lib-提供最底層的服務給-Flutter-框架用來引導整個應用程式，像是提供類別來驅動輸入-圖像文字-外觀-還有渲染系統" class="headerlink" title="功能該 lib 提供最底層的服務給 Flutter 框架用來引導整個應用程式，像是提供類別來驅動輸入 圖像文字 外觀 還有渲染系統"></a><strong>功能</strong><br>該 <code>lib</code> 提供最底層的<strong>服務</strong>給 <code>Flutter</code> 框架用來引導整個應用程式，像是提供<strong>類別</strong>來驅動<strong>輸入 圖像文字 外觀 還有渲染系統</strong></h2><p>根據上述，有了 <strong>dart:ui</strong> 就可以開始開發了，因為它提供最基本的 (<code>Canvas</code>, <code>Paint</code> <code>TextBox</code>) 等物件</p>
+<p><strong>小結</strong><br>越上層越容易控制使用，但越下層可以有更多複雜度的精細掌握</p>
+<hr>
+<h3 id="dart-ui"><a href="#dart-ui" class="headerlink" title="dart:ui"></a>dart:ui</h3><hr>
+<p><strong>功能</strong><br>該 <code>lib</code> 提供最底層的<strong>服務</strong>給 <code>Flutter</code> 框架用來引導整個應用程式，像是提供<strong>類別</strong>來驅動<strong>輸入 圖像文字 外觀 還有渲染系統</strong></p>
+<hr>
+<p>根據上述，有了 <strong>dart:ui</strong> 就可以開始開發了，因為它提供最基本的 (<code>Canvas</code>, <code>Paint</code> <code>TextBox</code>) 等物件</p>
 <ul>
-<li><p><strong>缺點是難以管理</strong></p>
-<ol>
+<li><strong>缺點是難以管理</strong><ol>
 <li>需要設計繪畫的所有座標</li>
 <li>管理好每一張 <strong>frame</strong></li>
 </ol>
 </li>
-<li><p>除了，小型專案適用</p>
-</li>
+<li>除了，小型專案適用 </li>
 </ul>
 <h3 id="Rendering-Library"><a href="#Rendering-Library" class="headerlink" title="Rendering Library"></a>Rendering Library</h3><hr>
 <p><em><strong>The Flutter rendering tree</strong></em></p>
@@ -382,7 +380,7 @@
 </li>
 <li><p>The tree is composed out of RenderObjects</p>
 </li>
-<li><p>實例化一個 <code>RenderObject</code> 是非常昂貴且耗時的，所以會盡量的 <code>cache</code> 以避免資源的消耗 （所以 flutter 為何如此高效）</p>
+<li><p>實例化一個 <code>RenderObject</code> 是非常昂貴且耗時的，所以會盡量的 <code>cache</code> 以避免資源的消耗 （所以 flutter 為何如此高效） </p>
 </li>
 </ul>
 <h3 id="Widgets"><a href="#Widgets" class="headerlink" title="Widgets"></a>Widgets</h3><hr>
@@ -405,24 +403,21 @@
 <li><p><em><strong>這種方式在 OO 叫做 composition 而不是 inheritance</strong></em></p>
 </li>
 </ul>
-<h3 id="Material-Cupertino-library"><a href="#Material-Cupertino-library" class="headerlink" title="Material &amp; Cupertino library"></a>Material &amp; Cupertino library</h3><hr>
+<h3 id="Material-amp-Cupertino-library"><a href="#Material-amp-Cupertino-library" class="headerlink" title="Material &amp; Cupertino library"></a>Material &amp; Cupertino library</h3><hr>
 <p><strong>Widgets lib all the time ?</strong><br>其實除了自己組合所有複雜的 <code>widget</code> 也可以使用已經實作好的 Android &amp; iOS 常用的設計元件</p>
 <hr>
 <h2 id="建構-Flutter-UI-的詳細流程-Widget-Element-RenderObject"><a href="#建構-Flutter-UI-的詳細流程-Widget-Element-RenderObject" class="headerlink" title="建構 Flutter UI 的詳細流程 (Widget, Element, RenderObject)"></a>建構 Flutter UI 的詳細流程 (Widget, Element, RenderObject)</h2><p>以此程式為例</p>
 <ul>
 <li><p><img src="https://i.imgur.com/5Hbl5PU.png"></p>
 </li>
-<li><p>由外往裡包的 widget 分別是 <code>SimpleApp</code> &#x3D;&gt; <code>SimpleContainer</code> &#x3D;&gt; <code>SimpleText</code></p>
+<li><p>由外往裡包的 widget 分別是 <code>SimpleApp</code> =&gt; <code>SimpleContainer</code> =&gt; <code>SimpleText</code></p>
 </li>
 </ul>
 <p>整個 building (呼叫 <code>runApp()</code>) 的過程大概可以分成三個步驟，每一個步驟都有自己的 <code>tree</code></p>
 <ol>
-<li><p>Flutter 會建立一個包含這三個 widget 的 <strong><code>widget tree</code></strong></p>
-</li>
-<li><p>Flutter 會迭代整個 <code>widget tree</code> 並且創建第二個樹 - <code>element tree</code>。在迭代的過程中，每一個 <code>widget</code> 都會呼叫 <code>createElement()</code> 來實例化相對應得 <code>Element</code> 物件，並且將它塞到 <code>element tree</code> 裡面</p>
-</li>
-<li><p>以此類推，第三棵樹 - <code>RenderTree</code>，透過 <code>Element</code> 呼叫 <code>createRenderObject()</code> 產生 <code>RenderObject</code> 並且塞到 <code>RenderTree</code></p>
-</li>
+<li>Flutter 會建立一個包含這三個 widget 的 <strong><code>widget tree</code></strong></li>
+<li>Flutter 會迭代整個 <code>widget tree</code> 並且創建第二個樹 - <code>element tree</code>。在迭代的過程中，每一個 <code>widget</code> 都會呼叫 <code>createElement()</code> 來實例化相對應得 <code>Element</code> 物件，並且將它塞到 <code>element tree</code> 裡面</li>
+<li>以此類推，第三棵樹 - <code>RenderTree</code>，透過 <code>Element</code> 呼叫 <code>createRenderObject()</code> 產生 <code>RenderObject</code> 並且塞到 <code>RenderTree</code></li>
 </ol>
 <p>圖示<br>    <img src="https://i.imgur.com/eiZ09A5.png"></p>
 <h3 id="Widget-Element-RenderObject"><a href="#Widget-Element-RenderObject" class="headerlink" title="Widget? Element? RenderObject?"></a>Widget? Element? RenderObject?</h3><p><strong>每一個 <code>Element</code> 都會有一個 <em>reference</em> 參考到與其對應的 <code>Widget</code> 和 <code>RenderObject</code></strong></p>
@@ -451,7 +446,14 @@
 <p><strong>BuildContext 和 Element</strong><br>作為參數傳遞在 <code>build(BuildContext context)</code> 裡面的 <code>BuildContext</code> ，事實上就是包裝 <code>Element</code> 的物件，因此每一個 <code>widget</code> 都有獨一無二的 <code>BuildContext</code> </p>
 <hr>
 <hr>
-<h2 id="Conclusion我們可以得知-Flutter-如此高效是因為有這三棵樹，分別是1-widget-tree-用來代表要使用的-UI-物件是什麼，再加上記錄一些簡單的狀態設定2-element-tree-為兩棵樹間的代理人儲存相對應的每一層-widget-和-renderObject-的引用，用來比較彼此的相同或不同3-rederobject-tree-為真實渲染到螢幕上的龐大昂貴的物件"><a href="#Conclusion我們可以得知-Flutter-如此高效是因為有這三棵樹，分別是1-widget-tree-用來代表要使用的-UI-物件是什麼，再加上記錄一些簡單的狀態設定2-element-tree-為兩棵樹間的代理人儲存相對應的每一層-widget-和-renderObject-的引用，用來比較彼此的相同或不同3-rederobject-tree-為真實渲染到螢幕上的龐大昂貴的物件" class="headerlink" title="Conclusion我們可以得知 Flutter 如此高效是因為有這三棵樹，分別是1. widget tree 用來代表要使用的 UI 物件是什麼，再加上記錄一些簡單的狀態設定2. element tree 為兩棵樹間的代理人儲存相對應的每一層 widget 和 renderObject 的引用，用來比較彼此的相同或不同3. rederobject tree 為真實渲染到螢幕上的龐大昂貴的物件"></a><strong>Conclusion</strong><br>我們可以得知 Flutter 如此高效是因為有這三棵樹，分別是<br>1. <code>widget tree</code> 用來代表要使用的 UI 物件是什麼，再加上記錄一些簡單的狀態設定<br>2. <code>element tree</code> 為兩棵樹間的代理人儲存相對應的每一層 <code>widget</code> 和 <code>renderObject</code> 的引用，用來比較彼此的相同或不同<br><br>3. <code>rederobject tree</code> 為真實渲染到螢幕上的龐大昂貴的物件</h2>
+<p><strong>Conclusion</strong><br>我們可以得知 Flutter 如此高效是因為有這三棵樹，分別是 </p>
+<ol>
+<li><code>widget tree</code> 用來代表要使用的 UI 物件是什麼，再加上記錄一些簡單的狀態設定</li>
+<li><code>element tree</code> 為兩棵樹間的代理人儲存相對應的每一層 <code>widget</code> 和 <code>renderObject</code> 的引用，用來比較彼此的相同或不同</li>
+<li><code>rederobject tree</code> 為真實渲染到螢幕上的龐大昂貴的物件</li>
+</ol>
+<hr>
+
     </div>
 
     
@@ -537,7 +539,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number"></span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stateflul-Widget-v-s-Stateless-Widget"><span class="nav-number">1.</span> <span class="nav-text">Stateflul Widget v.s. Stateless Widget</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#debugging-UI"><span class="nav-number">2.</span> <span class="nav-text">debugging UI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ListView"><span class="nav-number">3.</span> <span class="nav-text">ListView</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Flutter-%E7%B3%BB%E7%B5%B1%E7%B0%A1%E4%BB%8B"><span class="nav-number">4.</span> <span class="nav-text">Flutter 系統簡介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%8F%E7%B5%90%E8%B6%8A%E4%B8%8A%E5%B1%A4%E8%B6%8A%E5%AE%B9%E6%98%93%E6%8E%A7%E5%88%B6%E4%BD%BF%E7%94%A8%EF%BC%8C%E4%BD%86%E8%B6%8A%E4%B8%8B%E5%B1%A4%E5%8F%AF%E4%BB%A5%E6%9C%89%E6%9B%B4%E5%A4%9A%E8%A4%87%E9%9B%9C%E5%BA%A6%E7%9A%84%E7%B2%BE%E7%B4%B0%E6%8E%8C%E6%8F%A1"><span class="nav-number">5.</span> <span class="nav-text">小結越上層越容易控制使用，但越下層可以有更多複雜度的精細掌握</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dart-ui"><span class="nav-number">5.1.</span> <span class="nav-text">dart:ui</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD%E8%A9%B2-lib-%E6%8F%90%E4%BE%9B%E6%9C%80%E5%BA%95%E5%B1%A4%E7%9A%84%E6%9C%8D%E5%8B%99%E7%B5%A6-Flutter-%E6%A1%86%E6%9E%B6%E7%94%A8%E4%BE%86%E5%BC%95%E5%B0%8E%E6%95%B4%E5%80%8B%E6%87%89%E7%94%A8%E7%A8%8B%E5%BC%8F%EF%BC%8C%E5%83%8F%E6%98%AF%E6%8F%90%E4%BE%9B%E9%A1%9E%E5%88%A5%E4%BE%86%E9%A9%85%E5%8B%95%E8%BC%B8%E5%85%A5-%E5%9C%96%E5%83%8F%E6%96%87%E5%AD%97-%E5%A4%96%E8%A7%80-%E9%82%84%E6%9C%89%E6%B8%B2%E6%9F%93%E7%B3%BB%E7%B5%B1"><span class="nav-number">6.</span> <span class="nav-text">功能該 lib 提供最底層的服務給 Flutter 框架用來引導整個應用程式，像是提供類別來驅動輸入 圖像文字 外觀 還有渲染系統</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rendering-Library"><span class="nav-number">6.1.</span> <span class="nav-text">Rendering Library</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Widgets"><span class="nav-number">6.2.</span> <span class="nav-text">Widgets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Material-Cupertino-library"><span class="nav-number">6.3.</span> <span class="nav-text">Material &amp; Cupertino library</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E6%A7%8B-Flutter-UI-%E7%9A%84%E8%A9%B3%E7%B4%B0%E6%B5%81%E7%A8%8B-Widget-Element-RenderObject"><span class="nav-number">7.</span> <span class="nav-text">建構 Flutter UI 的詳細流程 (Widget, Element, RenderObject)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Widget-Element-RenderObject"><span class="nav-number">7.1.</span> <span class="nav-text">Widget? Element? RenderObject?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%82%BA%E4%BB%80%E9%BA%BC%E8%A6%81%E4%B8%89%E6%A3%B5%E6%A8%B9%E4%B8%8D%E6%98%AF%E4%B8%80%E6%A3%B5%E6%A8%B9%EF%BC%9F"><span class="nav-number">7.1.1.</span> <span class="nav-text">為什麼要三棵樹不是一棵樹？</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Conclusion%E6%88%91%E5%80%91%E5%8F%AF%E4%BB%A5%E5%BE%97%E7%9F%A5-Flutter-%E5%A6%82%E6%AD%A4%E9%AB%98%E6%95%88%E6%98%AF%E5%9B%A0%E7%82%BA%E6%9C%89%E9%80%99%E4%B8%89%E6%A3%B5%E6%A8%B9%EF%BC%8C%E5%88%86%E5%88%A5%E6%98%AF1-widget-tree-%E7%94%A8%E4%BE%86%E4%BB%A3%E8%A1%A8%E8%A6%81%E4%BD%BF%E7%94%A8%E7%9A%84-UI-%E7%89%A9%E4%BB%B6%E6%98%AF%E4%BB%80%E9%BA%BC%EF%BC%8C%E5%86%8D%E5%8A%A0%E4%B8%8A%E8%A8%98%E9%8C%84%E4%B8%80%E4%BA%9B%E7%B0%A1%E5%96%AE%E7%9A%84%E7%8B%80%E6%85%8B%E8%A8%AD%E5%AE%9A2-element-tree-%E7%82%BA%E5%85%A9%E6%A3%B5%E6%A8%B9%E9%96%93%E7%9A%84%E4%BB%A3%E7%90%86%E4%BA%BA%E5%84%B2%E5%AD%98%E7%9B%B8%E5%B0%8D%E6%87%89%E7%9A%84%E6%AF%8F%E4%B8%80%E5%B1%A4-widget-%E5%92%8C-renderObject-%E7%9A%84%E5%BC%95%E7%94%A8%EF%BC%8C%E7%94%A8%E4%BE%86%E6%AF%94%E8%BC%83%E5%BD%BC%E6%AD%A4%E7%9A%84%E7%9B%B8%E5%90%8C%E6%88%96%E4%B8%8D%E5%90%8C3-rederobject-tree-%E7%82%BA%E7%9C%9F%E5%AF%A6%E6%B8%B2%E6%9F%93%E5%88%B0%E8%9E%A2%E5%B9%95%E4%B8%8A%E7%9A%84%E9%BE%90%E5%A4%A7%E6%98%82%E8%B2%B4%E7%9A%84%E7%89%A9%E4%BB%B6"><span class="nav-number">8.</span> <span class="nav-text">Conclusion我們可以得知 Flutter 如此高效是因為有這三棵樹，分別是1. widget tree 用來代表要使用的 UI 物件是什麼，再加上記錄一些簡單的狀態設定2. element tree 為兩棵樹間的代理人儲存相對應的每一層 widget 和 renderObject 的引用，用來比較彼此的相同或不同3. rederobject tree 為真實渲染到螢幕上的龐大昂貴的物件</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number"></span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stateflul-Widget-v-s-Stateless-Widget"><span class="nav-number">1.</span> <span class="nav-text">Stateflul Widget v.s. Stateless Widget</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#debugging-UI"><span class="nav-number">2.</span> <span class="nav-text">debugging UI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ListView"><span class="nav-number">3.</span> <span class="nav-text">ListView</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Flutter-%E7%B3%BB%E7%B5%B1%E7%B0%A1%E4%BB%8B"><span class="nav-number">4.</span> <span class="nav-text">Flutter 系統簡介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dart-ui"><span class="nav-number">4.2.</span> <span class="nav-text">dart:ui</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rendering-Library"><span class="nav-number">4.3.</span> <span class="nav-text">Rendering Library</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Widgets"><span class="nav-number">4.4.</span> <span class="nav-text">Widgets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Material-amp-Cupertino-library"><span class="nav-number">4.5.</span> <span class="nav-text">Material &amp; Cupertino library</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E6%A7%8B-Flutter-UI-%E7%9A%84%E8%A9%B3%E7%B4%B0%E6%B5%81%E7%A8%8B-Widget-Element-RenderObject"><span class="nav-number">5.</span> <span class="nav-text">建構 Flutter UI 的詳細流程 (Widget, Element, RenderObject)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Widget-Element-RenderObject"><span class="nav-number">5.1.</span> <span class="nav-text">Widget? Element? RenderObject?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%82%BA%E4%BB%80%E9%BA%BC%E8%A6%81%E4%B8%89%E6%A3%B5%E6%A8%B9%E4%B8%8D%E6%98%AF%E4%B8%80%E6%A3%B5%E6%A8%B9%EF%BC%9F"><span class="nav-number">5.1.1.</span> <span class="nav-text">為什麼要三棵樹不是一棵樹？</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

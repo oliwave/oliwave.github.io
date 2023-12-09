@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 7.0.0">
+<meta name="generator" content="Hexo 5.4.2">
 <meta name="google-site-verification" content="k814B6oZZdFhzRqptaxJWhC9CcI4nSpIoHJqgp5X-4c" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
@@ -289,16 +289,11 @@
 </li>
 <li><p>巧克力工廠的特色</p>
 <ol>
-<li><p>工廠收到一個 ‘order’, 做一些處理後, 將蛋糕從工廠的另外一端吐出</p>
-</li>
-<li><p>當有第一個訂單以前工廠是尚未建立的</p>
-</li>
-<li><p>工廠花大多數的時間在等訂單進來</p>
-</li>
-<li><p>必須有人（order taker ：) 等待新的訂單. 這是進入工廠的入口</p>
-</li>
-<li><p>當蛋糕做好的時候必須有人來拿</p>
-</li>
+<li>工廠收到一個 ‘order’, 做一些處理後, 將蛋糕從工廠的另外一端吐出</li>
+<li>當有第一個訂單以前工廠是尚未建立的</li>
+<li>工廠花大多數的時間在等訂單進來</li>
+<li>必須有人（order taker ：) 等待新的訂單. 這是進入工廠的入口</li>
+<li>當蛋糕做好的時候必須有人來拿</li>
 </ol>
 </li>
 </ul>
@@ -321,16 +316,16 @@
 </ol>
 <h4 id="總覽"><a href="#總覽" class="headerlink" title="總覽"></a>總覽</h4><p><img src="https://i.imgur.com/JX8YUp6.png"></p>
 <ul>
-<li><p><strong>Order Taker</strong> : <code>StreamController</code> 的 <code>sink.add</code> 函數 </p>
-<ul>
+<li><strong>Order Taker</strong> : <code>StreamController</code> 的 <code>sink.add</code> 函數 <ul>
 <li>功能 : 將加入的 event 提供給 stream 去處理</li>
 </ul>
 </li>
-<li><p><strong>Order Inspector</strong> : <code>stream</code> 的map函數</p>
-<ul>
+<li><strong>Order Inspector</strong> : <code>stream</code> 的map函數<ul>
 <li>功能 : 檢視每一個進來 <code>stream</code> 的 event , 並加以處理(抽取或轉換)然後返回</li>
 </ul>
 </li>
+</ul>
+<ul>
 <li><p><strong>Baker</strong> : <code>StreamTransformer</code></p>
 <ul>
 <li>功能 : 處理每一個進來的處理過的資料, 然後塞回<code>stream</code></li>
@@ -344,7 +339,17 @@
 <ul>
 <li>都是用來處理 stream 裡面的 event</li>
 </ul>
-<h2 id="不同-map-function-一對一的data進出-StreamTransformer-一對多的資料進出-輸出多個資料-更加彈性-e-g-可以呼叫多次-sink-add-將-event-data-加入到-stream"><a href="#不同-map-function-一對一的data進出-StreamTransformer-一對多的資料進出-輸出多個資料-更加彈性-e-g-可以呼叫多次-sink-add-將-event-data-加入到-stream" class="headerlink" title="不同 :- map function : 一對一的data進出- StreamTransformer : 一對多的資料進出(輸出多個資料)    - 更加彈性    - e.g. 可以呼叫多次 sink.add , 將 event data 加入到 stream"></a>不同 :<br>- <code>map function</code> : 一對一的data進出<br>- <code>StreamTransformer</code> : 一對多的資料進出(輸出多個資料)<br>    - 更加彈性<br>    - e.g. 可以呼叫多次 <code>sink.add</code> , 將 event data 加入到 stream</h2><h2 id="Why-Stream"><a href="#Why-Stream" class="headerlink" title="Why Stream ?"></a>Why Stream ?</h2><img src="https://i.imgur.com/FYyQ0LW.png" width="500" height="300" />
+<p>不同 : </p>
+<ul>
+<li><code>map function</code> : 一對一的data進出</li>
+<li><code>StreamTransformer</code> : 一對多的資料進出(輸出多個資料)<ul>
+<li>更加彈性</li>
+<li>e.g. 可以呼叫多次 <code>sink.add</code> , 將 event data 加入到 stream</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="Why-Stream"><a href="#Why-Stream" class="headerlink" title="Why Stream ?"></a>Why Stream ?</h2><img src="https://i.imgur.com/FYyQ0LW.png" width="500" height="300" />
 
 <hr>
 <h4 id="緣起"><a href="#緣起" class="headerlink" title="緣起"></a>緣起</h4><p><code>Stream</code> 的處理方式看似複雜, 但在 flutter 或 dart 裡面經常會提供觸發的事件資料(透過 sink 放入 stream 裡面), 而無需自己製作. 我們只需創建另一個 <code>stream</code> 用</p>
@@ -445,7 +450,7 @@
 <ol>
 <li>stream : 要監測事件的 stream</li>
 <li>builder : <strong>將串流裡的元素轉換成 widget</strong> (builder function)<ul>
-<li><strong>觸發條件為當 stream 改變</strong></li>
+<li><strong>觸發條件為當 stream 改變</strong> </li>
 </ul>
 </li>
 </ol>
@@ -506,13 +511,11 @@
 </li>
 <li><p>不同的術語在 RxDart</p>
 <ul>
-<li><p><code>Stream</code> 會變成 <code>Observable</code> </p>
-<ul>
+<li><code>Stream</code> 會變成 <code>Observable</code> <ul>
 <li>A wrapper class that extends to Stream</li>
 </ul>
 </li>
-<li><p><code>StreamController</code>會變成<code>Subject</code></p>
-<ul>
+<li><code>StreamController</code>會變成<code>Subject</code><ul>
 <li>A wrapper class that extends to StreamController</li>
 </ul>
 </li>
@@ -533,7 +536,7 @@
 <p><strong>學習連結</strong></p>
 <p><a target="_blank" rel="noopener" href="https://pub.dartlang.org/documentation/rxdart/latest/"><strong>完全RxDart教學手冊</strong></a></p>
 <hr>
-<p><strong>回到正題 &#x3D;&gt; 我們將用RxDart的 <code>combineLatest2()</code> 方法讓兩個 <code>stream</code> 做出合併處理</strong></p>
+<p><strong>回到正題 =&gt; 我們將用RxDart的 <code>combineLatest2()</code> 方法讓兩個 <code>stream</code> 做出合併處理</strong></p>
 <!-- ![](https://i.imgur.com/hAHWXuQ.png) -->
 <img src="https://i.imgur.com/hAHWXuQ.png" width="400" height="500" />
 
@@ -630,7 +633,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Flutter-%E5%AE%8C%E6%95%B4%E9%96%8B%E7%99%BC%E6%9E%B6%E6%A7%8B"><span class="nav-number"></span> <span class="nav-text">Flutter 完整開發架構</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-%E5%88%9D%E8%AD%98"><span class="nav-number">1.</span> <span class="nav-text">Stream 初識</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%80%E9%BA%BC%E6%98%AF-StreamController"><span class="nav-number">1.0.1.</span> <span class="nav-text">什麼是 StreamController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B8%BD%E8%A6%BD"><span class="nav-number">1.0.2.</span> <span class="nav-text">總覽</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C-map-function-%E4%B8%80%E5%B0%8D%E4%B8%80%E7%9A%84data%E9%80%B2%E5%87%BA-StreamTransformer-%E4%B8%80%E5%B0%8D%E5%A4%9A%E7%9A%84%E8%B3%87%E6%96%99%E9%80%B2%E5%87%BA-%E8%BC%B8%E5%87%BA%E5%A4%9A%E5%80%8B%E8%B3%87%E6%96%99-%E6%9B%B4%E5%8A%A0%E5%BD%88%E6%80%A7-e-g-%E5%8F%AF%E4%BB%A5%E5%91%BC%E5%8F%AB%E5%A4%9A%E6%AC%A1-sink-add-%E5%B0%87-event-data-%E5%8A%A0%E5%85%A5%E5%88%B0-stream"><span class="nav-number">2.</span> <span class="nav-text">不同 :- map function : 一對一的data進出- StreamTransformer : 一對多的資料進出(輸出多個資料)    - 更加彈性    - e.g. 可以呼叫多次 sink.add , 將 event data 加入到 stream</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-Stream"><span class="nav-number">3.</span> <span class="nav-text">Why Stream ?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B7%A3%E8%B5%B7"><span class="nav-number">3.0.1.</span> <span class="nav-text">緣起</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-%E2%80%98take%E2%80%99-and-%E2%80%98where%E2%80%99-function"><span class="nav-number">4.</span> <span class="nav-text">Stream ‘take’ and ‘where’ function ?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BLOC%E2%80%99s-vs-Stateful-widgets"><span class="nav-number">5.</span> <span class="nav-text">BLOC’s vs Stateful widgets</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A0%B4%E6%99%AF-%EF%BC%9A-BLOC-%E5%B0%8D%E6%96%BC%E8%B3%87%E8%A8%8A%E5%85%B1%E4%BA%AB%E6%96%BC%E4%B8%8D%E5%90%8C-widget-%E4%B9%8B%E9%96%93%E5%81%9A%E5%87%BA%E5%BE%88%E5%A5%BD%E7%9A%84%E8%99%95%E7%90%86"><span class="nav-number">5.0.1.</span> <span class="nav-text">場景 ： BLOC 對於資訊共享於不同 widget 之間做出很好的處理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#streams-%E5%9C%A8-bloc-%E8%A3%A1%E9%A0%AD%E7%9A%84%E6%84%8F%E7%BE%A9"><span class="nav-number">6.</span> <span class="nav-text">streams 在 bloc 裡頭的意義</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bloc-%E7%9A%84%E6%87%89%E7%94%A8"><span class="nav-number">7.</span> <span class="nav-text">Bloc 的應用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Single-Global-Instance-%E9%81%A9%E5%90%88%E7%94%A8%E6%96%BC%E5%9C%A8%E8%BC%83%E5%B0%8F%E7%9A%84%E9%A0%85%E7%9B%AE%E7%95%B6%E4%B8%AD"><span class="nav-number">7.0.1.</span> <span class="nav-text">1. Single Global Instance : 適合用於在較小的項目當中</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Scoped-Instance-%E9%81%A9%E5%90%88%E5%9C%A8%E6%9B%B4%E5%A4%A7%E5%9E%8B%E4%B8%94%E6%9B%B4%E8%A4%87%E9%9B%9C%E7%9A%84%E9%A0%85%E7%9B%AE%E5%BA%95%E4%B8%8B%E9%96%8B%E7%99%BC"><span class="nav-number">7.0.2.</span> <span class="nav-text">2. Scoped Instance : 適合在更大型且更複雜的項目底下開發</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StreamBuilder-consuming-stream"><span class="nav-number">8.</span> <span class="nav-text">StreamBuilder - consuming stream</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E5%B8%B8%E6%87%89%E7%94%A8%E4%BE%86%E6%9B%B4%E6%96%B0-%E6%B8%B2%E6%9F%93-widget-%E5%8F%96%E4%BB%A3%E5%8E%9F%E6%9C%89%E4%BD%BF%E7%94%A8-statefulWidget-%E7%9A%84-setState"><span class="nav-number">8.0.1.</span> <span class="nav-text">通常應用來更新(渲染) widget 取代原有使用 statefulWidget 的 setState()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#context"><span class="nav-number">9.</span> <span class="nav-text">context</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-merge-two-stream"><span class="nav-number">10.</span> <span class="nav-text">How to merge two stream ?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#solution-to-merge-stream"><span class="nav-number">10.1.</span> <span class="nav-text">solution to merge stream</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RxDart"><span class="nav-number">11.</span> <span class="nav-text">RxDart</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rx%E5%AE%B6%E6%97%8F%E4%BB%8B%E7%B4%B9"><span class="nav-number">11.1.</span> <span class="nav-text">Rx家族介紹</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#combineLatest2-%E7%9A%84%E6%A9%9F%E5%88%B6%E5%9C%96%E8%A7%A3"><span class="nav-number">11.1.1.</span> <span class="nav-text">combineLatest2() 的機制圖解</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bloc-%E7%B8%BD%E7%B5%90"><span class="nav-number">12.</span> <span class="nav-text">Bloc 總結</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Flutter-%E5%AE%8C%E6%95%B4%E9%96%8B%E7%99%BC%E6%9E%B6%E6%A7%8B"><span class="nav-number"></span> <span class="nav-text">Flutter 完整開發架構</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-%E5%88%9D%E8%AD%98"><span class="nav-number">1.</span> <span class="nav-text">Stream 初識</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%80%E9%BA%BC%E6%98%AF-StreamController"><span class="nav-number">1.0.1.</span> <span class="nav-text">什麼是 StreamController</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B8%BD%E8%A6%BD"><span class="nav-number">1.0.2.</span> <span class="nav-text">總覽</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Why-Stream"><span class="nav-number">2.</span> <span class="nav-text">Why Stream ?</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B7%A3%E8%B5%B7"><span class="nav-number">2.0.1.</span> <span class="nav-text">緣起</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stream-%E2%80%98take%E2%80%99-and-%E2%80%98where%E2%80%99-function"><span class="nav-number">3.</span> <span class="nav-text">Stream ‘take’ and ‘where’ function ?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BLOC%E2%80%99s-vs-Stateful-widgets"><span class="nav-number">4.</span> <span class="nav-text">BLOC’s vs Stateful widgets</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A0%B4%E6%99%AF-%EF%BC%9A-BLOC-%E5%B0%8D%E6%96%BC%E8%B3%87%E8%A8%8A%E5%85%B1%E4%BA%AB%E6%96%BC%E4%B8%8D%E5%90%8C-widget-%E4%B9%8B%E9%96%93%E5%81%9A%E5%87%BA%E5%BE%88%E5%A5%BD%E7%9A%84%E8%99%95%E7%90%86"><span class="nav-number">4.0.1.</span> <span class="nav-text">場景 ： BLOC 對於資訊共享於不同 widget 之間做出很好的處理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#streams-%E5%9C%A8-bloc-%E8%A3%A1%E9%A0%AD%E7%9A%84%E6%84%8F%E7%BE%A9"><span class="nav-number">5.</span> <span class="nav-text">streams 在 bloc 裡頭的意義</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bloc-%E7%9A%84%E6%87%89%E7%94%A8"><span class="nav-number">6.</span> <span class="nav-text">Bloc 的應用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Single-Global-Instance-%E9%81%A9%E5%90%88%E7%94%A8%E6%96%BC%E5%9C%A8%E8%BC%83%E5%B0%8F%E7%9A%84%E9%A0%85%E7%9B%AE%E7%95%B6%E4%B8%AD"><span class="nav-number">6.0.1.</span> <span class="nav-text">1. Single Global Instance : 適合用於在較小的項目當中</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Scoped-Instance-%E9%81%A9%E5%90%88%E5%9C%A8%E6%9B%B4%E5%A4%A7%E5%9E%8B%E4%B8%94%E6%9B%B4%E8%A4%87%E9%9B%9C%E7%9A%84%E9%A0%85%E7%9B%AE%E5%BA%95%E4%B8%8B%E9%96%8B%E7%99%BC"><span class="nav-number">6.0.2.</span> <span class="nav-text">2. Scoped Instance : 適合在更大型且更複雜的項目底下開發</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#StreamBuilder-consuming-stream"><span class="nav-number">7.</span> <span class="nav-text">StreamBuilder - consuming stream</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E5%B8%B8%E6%87%89%E7%94%A8%E4%BE%86%E6%9B%B4%E6%96%B0-%E6%B8%B2%E6%9F%93-widget-%E5%8F%96%E4%BB%A3%E5%8E%9F%E6%9C%89%E4%BD%BF%E7%94%A8-statefulWidget-%E7%9A%84-setState"><span class="nav-number">7.0.1.</span> <span class="nav-text">通常應用來更新(渲染) widget 取代原有使用 statefulWidget 的 setState()</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#context"><span class="nav-number">8.</span> <span class="nav-text">context</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#How-to-merge-two-stream"><span class="nav-number">9.</span> <span class="nav-text">How to merge two stream ?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#solution-to-merge-stream"><span class="nav-number">9.1.</span> <span class="nav-text">solution to merge stream</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RxDart"><span class="nav-number">10.</span> <span class="nav-text">RxDart</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Rx%E5%AE%B6%E6%97%8F%E4%BB%8B%E7%B4%B9"><span class="nav-number">10.1.</span> <span class="nav-text">Rx家族介紹</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#combineLatest2-%E7%9A%84%E6%A9%9F%E5%88%B6%E5%9C%96%E8%A7%A3"><span class="nav-number">10.1.1.</span> <span class="nav-text">combineLatest2() 的機制圖解</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bloc-%E7%B8%BD%E7%B5%90"><span class="nav-number">11.</span> <span class="nav-text">Bloc 總結</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 7.0.0">
+<meta name="generator" content="Hexo 5.4.2">
 <meta name="google-site-verification" content="k814B6oZZdFhzRqptaxJWhC9CcI4nSpIoHJqgp5X-4c" />
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
@@ -303,7 +303,7 @@
 </li>
 <li><p><strong>Tween</strong> - beTween</p>
 <ul>
-<li>描述動畫的<strong>值</strong>所會跨越的範圍</li>
+<li>描述動畫的<strong>值</strong>所會跨越的範圍      </li>
 </ul>
 </li>
 </ol>
@@ -351,8 +351,7 @@
 <figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">&#x27;package:flutter/material.dart&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">&#x27;../widgets/cat.dart&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Home</span> <span class="keyword">extends</span> <span class="title">StatefulWidget</span> </span>&#123;</span><br><span class="line">  <span class="meta">@override</span></span><br><span class="line">  _HomeState createState() =&gt; _HomeState();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// TickerProvider 給widget外面的世界一個識別證可以進來該widget</span></span><br><span class="line"><span class="comment">//, 為了通知AnimationController更新Animation</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">_HomeState</span> <span class="keyword">extends</span> <span class="title">State</span>&lt;<span class="title">Home</span>&gt; </span></span><br><span class="line"><span class="class">                    <span class="title">with</span> <span class="title">TickerProviderStateMixin</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 這兩個變數會在widget整個生命中持續存在被持有</span></span><br><span class="line">  Animation&lt;<span class="built_in">double</span>&gt; catAnimation;</span><br><span class="line">  AnimationController catController;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 1. 當State第一次被創建時會調用這個方法</span></span><br><span class="line">  <span class="comment">// 2. 只有繼承State的widget才有該方法</span></span><br><span class="line">  <span class="comment">// 3. 用來初始化實體變數</span></span><br><span class="line">  <span class="meta">@override</span></span><br><span class="line">  <span class="keyword">void</span> initState() &#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> implement initState</span></span><br><span class="line">    <span class="keyword">super</span>.initState();</span><br><span class="line"></span><br><span class="line">    catController = AnimationController(</span><br><span class="line">      duration: <span class="built_in">Duration</span>(seconds: <span class="number">1</span>), <span class="comment">// 該動畫會持續多久</span></span><br><span class="line">      vsync: <span class="keyword">this</span>, <span class="comment">// 代表嵌入TickerProvider到當前運行的widget實體</span></span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    catAnimation = Tween(begin: <span class="number">0.0</span>, end: <span class="number">200.0</span>)</span><br><span class="line">        .animate(CurvedAnimation(</span><br><span class="line">          <span class="comment">// 該widget用來描述, 動畫數值從begin到end的比率有多快</span></span><br><span class="line">          parent: catController,</span><br><span class="line">          curve: Curves.easeIn,</span><br><span class="line">        ));</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@override</span></span><br><span class="line">  Widget build(BuildContext context) &#123;</span><br><span class="line">    <span class="keyword">return</span> Scaffold(</span><br><span class="line">      appBar: AppBar(</span><br><span class="line">        title: Text(<span class="string">&#x27;Animation!&#x27;</span>),</span><br><span class="line">      ),</span><br><span class="line">      body: GestureDetector( <span class="comment">// 手勢偵測器</span></span><br><span class="line">        child: buildAnimation(), <span class="comment">// 偵測該子widget上使用者的手勢</span></span><br><span class="line">        onTap: onTap,</span><br><span class="line">      ),</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Widget buildAnimation() &#123;</span><br><span class="line">    <span class="keyword">return</span> AnimatedBuilder(</span><br><span class="line">      animation: catAnimation,</span><br><span class="line">      child: Cat(), <span class="comment">// a really expensive widget to create</span></span><br><span class="line">      builder: (context, child) &#123;</span><br><span class="line">        <span class="keyword">return</span> Container(</span><br><span class="line">          <span class="comment">// inexpensive widget to create</span></span><br><span class="line">          child: child,</span><br><span class="line">          margin: EdgeInsets.only(top: catAnimation.value),</span><br><span class="line">        );</span><br><span class="line">      &#125;,</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">void</span> onTap() &#123;</span><br><span class="line">    catController.forward();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <p><strong>AnimatedBuilder</strong></p>
 <ul>
-<li><img src="https://i.imgur.com/VssG3cJ.png" width="600" height="300" />
-</li>
+<li><img src="https://i.imgur.com/VssG3cJ.png" width="600" height="300" /></li>
 <li><p><em>兩個問題的探討</em> : </p>
 <ol>
 <li><p><strong>對 <code>XxBuilder</code> 的概念是什麼？ - 就 StreamBuilder 經驗來看</strong></p>
@@ -451,8 +450,7 @@
 </li>
 <li><p><em><strong>fetchItem</strong></em></p>
 <ul>
-<li><img src="https://i.imgur.com/ykH79Ld.png" width="700" height="400" />
-</li>
+<li><img src="https://i.imgur.com/ykH79Ld.png" width="700" height="400" /></li>
 <li><p><code>query</code> 返回的類型一定是 <code>List&lt;Map&lt;String, dynamic&gt;&gt;</code></p>
 </li>
 </ul>
@@ -469,8 +467,9 @@
 <h1 id="Navigation-In-Flutter"><a href="#Navigation-In-Flutter" class="headerlink" title="Navigation In Flutter"></a>Navigation In Flutter</h1><hr>
 <p><strong>Navigation 概述</strong></p>
 <ul>
-<li><p><strong>主要負責決定要在裝置的螢幕上顯示甚麼頁面</strong></p>
-</li>
+<li><strong>主要負責決定要在裝置的螢幕上顯示甚麼頁面</strong></li>
+</ul>
+<ul>
 <li><p><strong>route 就是 screen</strong></p>
 </li>
 <li><p><strong>route 是由 Navigator 所控制的</strong></p>
@@ -492,10 +491,8 @@
 <li><p><code>initialRoute</code> 屬性: <strong>路徑</strong></p>
  <figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> main() &#123;</span><br><span class="line">  runApp(MaterialApp(</span><br><span class="line">    initialRoute: <span class="string">&#x27;/&#x27;</span>,</span><br><span class="line">    routes: &lt;<span class="built_in">String</span>, WidgetBuilder&gt;&#123;</span><br><span class="line">        <span class="string">&#x27;/&#x27;</span>: (context) =&gt; HomePage(),</span><br><span class="line">        <span class="string">&#x27;/second&#x27;</span>: (context) =&gt; SecondHome()</span><br><span class="line">    &#125;</span><br><span class="line">          .</span><br><span class="line">          .</span><br><span class="line">          .</span><br><span class="line">  ));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
-<li><p>如果使用 <code>initialRoute</code> 就必須要設定 <code>routes</code> 或是 <code>onGenerateRoute</code> 屬性</p>
-</li>
-<li><p><code>Flutter</code> 預設路徑是 **’&#x2F;‘**，因此如果是用預設路徑可以不需要加 <code>initialRoute: &#39;/&#39;</code></p>
-   <figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> main() &#123;</span><br><span class="line">  runApp(MaterialApp(</span><br><span class="line">    routes: &lt;<span class="built_in">String</span>, WidgetBuilder&gt;&#123;</span><br><span class="line">        <span class="string">&#x27;/&#x27;</span>: (context) =&gt; HomePage(),</span><br><span class="line">        <span class="string">&#x27;/second&#x27;</span>: (context) =&gt; SecondHome()</span><br><span class="line">    &#125;</span><br><span class="line">          .</span><br><span class="line">          .</span><br><span class="line">          .</span><br><span class="line">  ));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<li>如果使用 <code>initialRoute</code> 就必須要設定 <code>routes</code> 或是 <code>onGenerateRoute</code> 屬性</li>
+<li><code>Flutter</code> 預設路徑是 **’/‘**，因此如果是用預設路徑可以不需要加 <code>initialRoute: &#39;/&#39;</code>   <figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> main() &#123;</span><br><span class="line">  runApp(MaterialApp(</span><br><span class="line">    routes: &lt;<span class="built_in">String</span>, WidgetBuilder&gt;&#123;</span><br><span class="line">        <span class="string">&#x27;/&#x27;</span>: (context) =&gt; HomePage(),</span><br><span class="line">        <span class="string">&#x27;/second&#x27;</span>: (context) =&gt; SecondHome()</span><br><span class="line">    &#125;</span><br><span class="line">          .</span><br><span class="line">          .</span><br><span class="line">          .</span><br><span class="line">  ));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
 <li>也可以不用預設路徑自己命名</li>
 </ul>
@@ -516,16 +513,16 @@
 </tr>
 </thead>
 <tbody><tr>
-<td align="center">&#x2F;</td>
+<td align="center">/</td>
 <td align="center">NewsList</td>
 </tr>
 <tr>
-<td align="center">&#x2F;details</td>
+<td align="center">/details</td>
 <td align="center">NewsDetail</td>
 </tr>
 </tbody></table>
 <ul>
-<li><em>優點 : 很輕易的可以作業面的轉換</em></li>
+<li> <em>優點 : 很輕易的可以作業面的轉換</em></li>
 <li><em>缺點 : 頁面間的資訊供通傳送會變得很複雜</em></li>
 </ul>
 </li>
